@@ -1,0 +1,139 @@
+# loop-contract-schema.yaml — Loop Engineering Control Plane 계약 스키마 (Single Source of Truth)
+# r3 후보(harness-2026-06-23-r3-loop-rc). r2 불변.
+#
+# 정본: 자연어 요청 1건 → 1 loop_contract. harness-loop-engineering 이 작성하고
+#       scripts/loop_contract_validator.py 가 검증한다(필수필드+enum). 대화 컨텍스트는
+#       loop 상태의 정본이 아니다 — 정본은 디스크의 contract.yaml + events.jsonl + verdict.json.
+schema: loop_contract
+version: 1.0
+scope: loop-engineering        # 이 layer 의 SoT (system-wide 아님)
+
+# ─────────────────────────────────────────────────────────────
+# 필수 필드 (validator 가 강제)
+# ─────────────────────────────────────────────────────────────
+required_fields:
+  - loop_id                    # <task_type>-YYYYMMDD-HHMMSS-<4hex> (결정적 입력 시 재현 가능)
+  - created_at                 # YYYY-MM-DD (날조 금지 — 호출자가 주입)
+  - request                    # 사용자 자연어 요청 원문(verbatim)
+  - task_type                  # enum: task_types (아래)
+  - recipe                     # recipes/<name>.yaml 의 name (실재해야 함)
+  - executor                   # 실행 주체 (예: claude-main, dev-suite, writing-suite)
+  - validation_mode            # list, enum: validation_modes (아래) — 최소 1
+  - steps                      # 순서 있는 단계 목록(각 {id, action, uses})
+  - budget                     # {max_iterations, max_minutes, repeat_fail_hold, ...}
+  - editable_paths             # allow-list glob (이 밖은 실행 중 재승인 필요)
+  - human_gates                # 사용자 승인 필요 위험작업 목록(빈 [] 허용)
+  - success_conditions         # 성공 판정 기준(≥1)
+  - hold_conditions            # HOLD 판정 기준(≥1)
+  - state                      # 상태 파일 경로(아래 state_paths 형식)
+  - approval                   # {plan_approved: bool, approved_at, approved_via}
+
+# ─────────────────────────────────────────────────────────────
+# enum 정의
+# ─────────────────────────────────────────────────────────────
+task_types:                    # 자연어 라우팅 대상(= recipes 와 1:1 또는 N:1)
+  - simple-question            # 설명·상태조회·파일읽기·짧은 문장수정 → one-shot
+  - code-bugfix                # "고쳐줘/버그" → DEV:debug→tdd→test→review
+  - code-feature               # "구현해줘/기능" → (deep-interview?)→tdd→test→review(→Ralph)
+  - code-question              # "이 함수 뭐야" → one-shot, 수정루프 미발화
+  - research                   # 광범위 조사 → executor-verifier(research workflow)
+  - fact-check                 # 단순 사실확인 → one-shot
+  - writing                    # "다듬어/보고서" → draft→audit→polish (≤2)
+  - experiment                 # "A/B/lr 비교" → experiment contract → Mode C(human-gated)
+  - document-form              # HWP/DOCX/HTML → copy→apply→render (≤2)
+  - claude-design              # PPT/슬라이드 디자인 → 3장 파일럿 → (≤2)
+  - knowledge-promotion        # Wiki 승격 → audit→Codex→재검증→승인
+  - deployment                 # 서버/프로젝트 배포 → delta→backup→canary→smoke→live
+  - long-compute               # 장기연산 → nohup/tmux + watcher(완료/로그만)
+  - visual-generation          # 그림 생성 → Claude SVG/NotebookLM/Nano Banana Pro/Lottie/Claude Design 라우팅
+
+validation_modes:
+  one-shot:           "추가 반복·agent 없음. 단발 응답."
+  deterministic-only: "compile/test/lint/schema/metric/render 등 환경검증만. 모델 교차검증 없음."
+  executor-verifier:  "실행자(쓰기권한) + 읽기전용 verifier(Write/Edit 금지) 별도 컨텍스트 분리."
+  cross-model:        "Claude 결과를 Codex/ChatGPT 가 반박. Codex 결과는 정본 아님 — Claude 가 source 로 재검증."
+  human-gated:        "배포·삭제·push/merge·외부업로드·유료호출·Mode C 실행·Design sync·Wiki 승격에 사용자 승인 필수."
+
+# ─────────────────────────────────────────────────────────────
+# 상태 경로 (state) — 대화가 아니라 디스크가 정본
+# <loop_id> 치환. 절대경로 하드코딩 금지(프로젝트 루트 상대).
+# ─────────────────────────────────────────────────────────────
+state_paths:
+  contract:  "_claude/loops/<loop_id>/contract.yaml"
+  ledger:    "_claude/loops/<loop_id>/events.jsonl"
+  verdict:   "_claude/loops/<loop_id>/verdict.json"
+  artifact:  "_output/loops/<loop_id>/"
+  lock:      "HOME runtime (~/.claude/projects/<project_id>/runtime/loops/<loop_id>.lock) — machine-local, 동기화 안 함"
+  heartbeat: "HOME runtime (~/.claude/projects/<project_id>/runtime/loops/<loop_id>.heartbeat)"
+
+# ─────────────────────────────────────────────────────────────
+# 예시 계약 (code-bugfix)
+# ─────────────────────────────────────────────────────────────
+example:
+  loop_id: code-bugfix-20260623-190000-a1b2
+  created_at: "2026-06-23"
+  request: "이 로그 파서 버그 자동으로 고쳐줘"
+  task_type: code-bugfix
+  recipe: code-bugfix
+  executor: dev-suite
+  validation_mode: [deterministic-only, executor-verifier]
+  steps:
+    - {id: 1, action: "근본원인 진단", uses: "harness-systematic-debugging (DEV:debug)"}
+    - {id: 2, action: "실패 재현 테스트 작성→수정", uses: "harness-tdd-implementation (DEV:tdd)"}
+    - {id: 3, action: "환경 테스트 실행(결정적)", uses: "project test runner"}
+    - {id: 4, action: "코드 품질 검토", uses: "harness-code-quality-review (DEV:review)"}
+  budget: {max_iterations: 3, max_minutes: 30, repeat_fail_hold: 2}
+  editable_paths: ["src/parsers/**", "tests/parsers/**"]
+  human_gates: []
+  success_conditions:
+    - "재현 테스트 RED→GREEN"
+    - "기존 테스트 회귀 0"
+    - "DEV:review major 지적 0(또는 해소)"
+  hold_conditions:
+    - "같은 실패 2회(repeat_fail_hold)"
+    - "editable_paths 밖 수정 필요 → 재승인"
+    - "budget(iter 3 / 30분) 초과"
+  state:
+    contract: "_claude/loops/code-bugfix-20260623-190000-a1b2/contract.yaml"
+    ledger:   "_claude/loops/code-bugfix-20260623-190000-a1b2/events.jsonl"
+    verdict:  "_claude/loops/code-bugfix-20260623-190000-a1b2/verdict.json"
+    artifact: "_output/loops/code-bugfix-20260623-190000-a1b2/"
+  approval: {plan_approved: true, approved_at: "2026-06-23", approved_via: AskUserQuestion}
+
+# ─────────────────────────────────────────────────────────────
+# 검증 우선순위 (verdict 산정 시 — loop-verifier-policy.md 와 정합)
+# ─────────────────────────────────────────────────────────────
+verification_priority:
+  1: "실제 실행·컴파일·테스트·metric·render"
+  2: "schema·lint·contract·security scan"
+  3: "독립 verifier 또는 Codex 적대검토(읽기전용)"
+  4: "사용자 승인"
+
+# ═════════════════════════════════════════════════════════════
+# r5 adaptive-verification 확장 (OPTIONAL · 하위호환)
+# 신규 필드가 없는 기존 contract는 아래 defaults 로 읽혀 r4 동작과 동일.
+# 기존 contract/ledger/verdict 자동 migration·덮어쓰기 금지.
+# ═════════════════════════════════════════════════════════════
+optional_fields_r5_adaptive:
+  domain_context:
+    default: { science_domains: [], observation_domains: [], method_domains: [], validation_domains: [], output_domains: [], locked_terms: {}, unresolved_terms: [] }
+    note: "5계층 도메인 스택(PHASE2). 빈 값=단일/미판정(r4 동작)."
+  review_plan:
+    default: { validation_mode: one-shot, review_topology: none, selected_pairs: [], temporary_specialists: [], cross_model_reviewer: none, human_gate: false }
+    note: "adaptive_verification_router 산출. 빈 값=one-shot/none(r4 동작)."
+  iteration_policy:
+    default: { mode: single-pass, minimum_passes: 1, maximum_passes: 1, maximum_fix_iterations: 0, same_failure_limit: 2, maximum_global_iterations: 5, convergence_criteria: [], stop_conditions: [], hold_conditions: [] }
+    note: "circuit_breaker.py 와 정합(same_failure_limit 2·global 5)."
+  risk_assessment:
+    default: { tier: low, ambiguity: low, domain_interdependence: low, irreversibility: low, public_impact: low, deterministic_verifier_available: false, rationale: [] }
+  provenance:
+    default: { source_files: [], source_hashes: {}, selected_at: null, selected_by: adaptive-router }
+
+# 허용값 (enum 확장 — 기존 validation_modes 5종 그대로 유지)
+review_topology_values: [none, intra-pair, cross-domain]
+iteration_mode_values:  [single-pass, two-pass, adaptive]
+risk_tier_values:       [low, medium, high, critical]
+
+backward_compat:
+  rule: "위 5필드는 required 아님. validator 는 있으면 enum 검증, 없으면 default 적용. 기존 r4 contract 무수정."
+  no_auto_migration: true

@@ -1,0 +1,5 @@
+# ast-grep project config (Evidence Index 보완 — 코드 구조 claim 검증)
+# 실행: ast-grep scan -c .claude/skills/_evidence-core/astgrep/sgconfig.yml hooks scripts
+# 범위: #3 훅 exit·#4 스크립트 함수/exit (구조). Markdown·f-string내용은 대상 외(rg 유지).
+ruleDirs:
+  - rules

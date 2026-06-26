@@ -1,0 +1,171 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "fleet_agent_pair_observability/v1",
+  "title": "Fleet Agent·Pair·Adaptive-Verification Observability — collector 출력 확장 스키마",
+  "description": "fleet_summary.py 가 프로젝트별 entry 에 추가하는 4 블록 + recent_runs. read-only. prompt/transcript/CoT/secret 미수집. 구버전 collector(필드 없음)는 not-supported 로 하위호환.",
+  "type": "object",
+  "properties": {
+    "agent_inventory": {
+      "type": "object",
+      "properties": {
+        "status": {"enum": ["installed", "none"]},
+        "agent_count": {"type": "integer", "description": ".bak 제외 .md agent 파일 수"},
+        "global_agent_count": {"type": "integer"},
+        "project_agent_count": {"type": "integer"},
+        "c_agent_count": {"type": "integer"},
+        "x_agent_count": {"type": "integer"},
+        "general_agent_count": {"type": "integer"},
+        "temporary_specialist_count": {"type": "integer", "description": "loop contract 에서 임시 선택된 specialist(영구 topology 아님)"},
+        "invalid_agent_count": {"type": "integer", "description": "필수 frontmatter 파싱 실패"},
+        "orphan_agent_count": {"type": "integer", "description": "pair/route 어디에도 참조 안 된 general agent"},
+        "agents": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "agent_id": {"type": "string", "description": "sha256(scope:name) 앞 12자 (원문 미노출)"},
+              "name": {"type": "string"},
+              "kind": {"enum": ["c", "x", "general", "temporary"]},
+              "scope": {"enum": ["global", "project"]},
+              "domain": {"type": ["string", "null"]},
+              "role_summary": {"type": "string", "description": "frontmatter description ≤240자 (prompt/응답 본문 아님)"},
+              "source_path_relative": {"type": "string"},
+              "source_sha256": {"type": ["string", "null"]},
+              "tools": {"type": "array", "items": {"type": "string"}},
+              "disallowed_tools": {"type": "array", "items": {"type": "string"}},
+              "skills": {"type": "array", "items": {"type": "string"}},
+              "write_permission": {"type": "boolean", "description": "tools 에 Write/Edit/NotebookEdit/MultiEdit 또는 '*' 포함(disallowed 우선)"},
+              "installed_status": {"enum": ["installed", "invalid-agent"]},
+              "referenced_by_pairs": {"type": "array", "items": {"type": "string"}},
+              "referenced_by_routes": {"type": "array", "items": {"type": "string"}}
+            }
+          }
+        }
+      }
+    },
+    "pair_topology": {
+      "type": "object",
+      "properties": {
+        "status": {"enum": ["configured", "cx-files-no-topology", "broken", "malformed", "not-configured"]},
+        "pair_count": {"type": "integer", "description": "★ valid PAIR_TOPOLOGY entry 수. agent 파일수÷2 가 아님."},
+        "topology_pair_entries": {"type": "integer"},
+        "static_pass_count": {"type": "integer"},
+        "live_pass_count": {"type": "integer"},
+        "observed_only_count": {"type": "integer", "description": "session_log task-call 만 있고 formal ledger verdict 없는 pair 수"},
+        "never_used_count": {"type": "integer"},
+        "legacy_untracked_count": {"type": "integer"},
+        "broken_pair_count": {"type": "integer"},
+        "hold_pair_count": {"type": "integer"},
+        "stale_pair_count": {"type": "integer"},
+        "unpaired_cx_count": {"type": "integer", "description": "topology entry 없는 c-/x- 파일 수"},
+        "unpaired_c": {"type": "array", "items": {"type": "string"}},
+        "unpaired_x": {"type": "array", "items": {"type": "string"}},
+        "topology_sha256": {"type": ["string", "null"]},
+        "routing_sha256": {"type": ["string", "null"]},
+        "topology_malformed": {"type": "boolean"},
+        "pairs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "pair_id": {"type": ["string", "null"]},
+              "pair_name": {"type": ["string", "null"]},
+              "c_agent": {"type": ["string", "null"]},
+              "x_agent": {"type": ["string", "null"]},
+              "domain_stack_refs": {"type": ["string", "array", "null"]},
+              "purpose_summary": {"type": ["string", "null"]},
+              "trigger_summary": {"type": ["string", "null"]},
+              "non_trigger_summary": {"type": ["string", "null"]},
+              "deterministic_verifiers": {"type": ["array", "string", "null"]},
+              "validation_modes": {"type": ["string", "array", "null"]},
+              "cross_model_policy": {"type": ["string", "null"]},
+              "maximum_iterations": {"type": ["integer", "string", "null"]},
+              "same_failure_limit": {"type": ["integer", "null"]},
+              "stop_conditions": {"type": ["array", "string", "null"]},
+              "c_write_permission": {"type": ["string", "boolean", "null"]},
+              "x_write_permission": {"type": ["string", "boolean", "null"]},
+              "source_status": {"enum": ["ok", "stale"]},
+              "pair_status": {"enum": ["valid-pair", "broken-pair", "HOLD"]},
+              "execution_status": {"enum": ["live-pass", "observed-only", "static-pass", "never-used", "legacy-untracked", "n/a"],
+                "description": "live-pass=formal loop_ledger + verdict 존재 / observed-only=session_log task-call 만(verdict 없음) / static-pass=ledger infra·0 run / never-used=tracked 있으나 미선택 / legacy-untracked=infra 없음"},
+              "problems": {"type": "array", "items": {"type": "string"}},
+              "last_used_at": {"type": ["string", "null"]},
+              "last_loop_id_hash": {"type": ["string", "null"]}
+            }
+          }
+        }
+      }
+    },
+    "routing_summary": {
+      "type": "object",
+      "properties": {
+        "routing_status": {"enum": ["ok", "malformed", "not-configured"]},
+        "route_count": {"type": "integer"},
+        "task_type_count": {"type": "integer"},
+        "one_shot_routes": {"type": "integer"},
+        "deterministic_routes": {"type": "integer"},
+        "intra_pair_routes": {"type": "integer"},
+        "cross_domain_routes": {"type": "integer"},
+        "human_gated_routes": {"type": "integer"}
+      }
+    },
+    "execution_summary": {
+      "type": "object",
+      "properties": {
+        "tracked_loop_count": {"type": "integer"},
+        "pass_count": {"type": "integer"},
+        "pass_with_caveats_count": {"type": "integer"},
+        "hold_count": {"type": "integer"},
+        "running_count": {"type": "integer"},
+        "malformed_count": {"type": "integer", "description": "손상 ledger 격리 카운트(전체 수집 실패 X)"},
+        "legacy_untracked_count": {"type": "integer"},
+        "last_activity_at": {"type": ["string", "null"]},
+        "last_verdict": {"type": ["string", "null"]},
+        "last_stop_reason": {"type": ["string", "null"]},
+        "maximum_observed_pair_fanout": {"type": "integer"},
+        "maximum_observed_iterations": {"type": "integer"},
+        "same_failure_overrun": {"type": "boolean"},
+        "codex_as_source_truth": {"type": "boolean", "description": "Codex 를 source-of-truth 로 기록한 위반"},
+        "ledger_infra": {"type": "boolean"}
+      }
+    },
+    "recent_runs": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "description": "화이트리스트 필드만. prompt/응답/transcript/CoT/secret 미수집. id 는 sha256 앞 12자.",
+        "properties": {
+          "loop_id_hash": {"type": "string"},
+          "started_at": {"type": ["string", "null"]},
+          "completed_at": {"type": ["string", "null"]},
+          "task_type": {"type": ["string", "null"]},
+          "risk_tier": {"type": ["string", "null"]},
+          "selected_pairs": {"type": "array", "items": {"type": "string"}},
+          "temporary_specialists": {"type": ["array", "null"]},
+          "validation_mode": {"type": ["string", "null"]},
+          "review_topology": {"type": ["string", "null"]},
+          "pass_count": {"type": ["integer", "string", "null"]},
+          "iteration_count": {"type": ["integer", "string", "null"]},
+          "deterministic_verifier_summary": {"type": ["string", "null"]},
+          "codex_used": {"type": ["boolean", "null"]},
+          "human_gate": {"type": ["boolean", "string", "null"]},
+          "verdict": {"type": ["string", "null"]},
+          "stop_reason": {"type": ["string", "null"]},
+          "contract_path_relative": {"type": ["string", "null"]},
+          "verdict_path_relative": {"type": ["string", "null"]},
+          "artifact_path_relative": {"type": ["string", "null"]},
+          "same_failure_overrun": {"type": ["boolean", "null"]},
+          "codex_as_source_truth": {"type": ["boolean", "null"]},
+          "malformed": {"type": ["boolean", "null"]}
+        }
+      }
+    }
+  },
+  "x-collection-limits": {
+    "max_recent_runs": 20,
+    "max_events_bytes_per_file": 262144,
+    "max_loop_dirs": 200,
+    "never_collected": ["user_prompt", "assistant_response", "transcript_body", "chain_of_thought", "research_data_body", "api_key", "token", "credential", "env_value", "MEMORY", "ACTIVE_CONTEXT"]
+  }
+}

@@ -1,0 +1,6 @@
+task_type: multi_domain
+risk_tier: high
+selected_pairs: [science, model]
+validation_mode: cross-domain
+review_topology: cross-domain
+completed_at: 2026-06-22T03:00:00Z

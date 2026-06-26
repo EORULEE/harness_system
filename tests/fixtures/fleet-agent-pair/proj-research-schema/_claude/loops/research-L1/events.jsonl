@@ -1,0 +1,5 @@
+{"event":"start","data":{"pair":"c-insar+x-insar"}}
+{"event":"round1_start","data":{"agents":["c-insar","x-insar","c-sar","x-sar"]}}
+{"event":"agent_done","data":{"agent":"c-sar","note":"ok"}}
+{"event":"agent_done","data":{"agent":"x-sar"}}
+{"event":"finalize","data":{"reason":"done"}}

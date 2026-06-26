@@ -1,0 +1,12 @@
+# format.yaml — DOCX 양식 프로파일 템플릿 (복사해서 새 DOCX 양식 추가)
+# 새 양식 = 이 디렉터리를 _format-profiles/docx/<new-name>/ 로 복사 후 값 채우기.
+# skill 코드 무수정(AC4). 로딩 규약: profile-resolution-rules.md.
+
+name: custom-template            # 양식 식별자. 실제 양식명으로 교체.
+family: docx
+engine: python-docx              # 기본 python-docx(설치확인 1.2.0). 고충실 필요 시 hancom-com.
+reference_template: ""           # 레퍼런스 .docx 경로(복사 후 치환). 없으면 빈 문자열.
+notes: |
+  DOCX 양식 규칙: 원본 직접수정 금지 → 레퍼런스 복사본에 적용, 사용자 승인 후(AC8).
+  engine=python-docx 기본, python-docx 로 표현 불가한 양식만 engine=hancom-com 폴백.
+  세부: hwp-docx-format-rules.md.

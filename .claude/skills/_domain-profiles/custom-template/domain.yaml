@@ -1,0 +1,15 @@
+# domain.yaml — 도메인 프로파일 템플릿 (복사해서 새 도메인 추가)
+# 새 도메인 = 이 디렉터리를 _domain-profiles/<new-name>/ 로 복사 후 값 채우기.
+# skill 코드는 건드리지 않는다(AC3). 로딩 규약: profile-resolution-rules.md.
+
+name: custom-template            # 도메인 식별자(kebab-case). 실제 도메인명으로 교체.
+description: "이 도메인 프로파일이 무엇을 위한 것인지 1줄."
+persona_seed: |
+  이 도메인 글쓰기에 쓰일 페르소나 도출 시드.
+  예: "당신은 <분야> N년차 연구자로, <대표 저널/기관> 경험이 있습니다. ..."
+  (gemini-writer 가 이 시드를 받아 정교한 system instruction 으로 확장한다.)
+terminology:                     # 도메인 핵심 용어(정확 표기 강제용)
+  - 용어1
+  - 용어2
+citation_norms: "이 도메인의 인용 규범(예: APA, IEEE). 실재 출처만(날조 금지)."
+audience_default: "기본 독자(예: 해당 분야 심사위원)."

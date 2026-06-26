@@ -1,0 +1,4 @@
+# SYSTEM_RELEASE.yaml — harness-public-core
+release_id: harness-public-core-v1
+status: public-core
+note: "보편 코어 공개본. 개인 배포이력·머신·경로·계정·KB/공유/Fleet 인프라 미포함. 설치자가 자기 환경 구성."

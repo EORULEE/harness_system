@@ -1,0 +1,7 @@
+{"event":"start"}
+{"event":"pair_routing","data":{"orchestrator_selected":["1-domain-science","2-data-provenance"]}}
+{"event":"pair_spawn","data":{"agent":"x-science","axis":"1-domain-science","mode":"read-only"}}
+{"event":"pair_spawn","data":{"agent":"x-data","axis":"2-data-provenance","mode":"read-only"}}
+{"event":"pair_result","data":{"agent":"x-science","finding":"S1 confirm"}}
+{"event":"pair_result","data":{"agent":"x-data","finding":"D1 refute"}}
+{"event":"finalize","data":{"verdict":"PASS"}}

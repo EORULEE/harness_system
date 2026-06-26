@@ -1,0 +1,3 @@
+schema: routing_matrix/v1
+rules:
+  simple: { pairs: 0, mode: one-shot }

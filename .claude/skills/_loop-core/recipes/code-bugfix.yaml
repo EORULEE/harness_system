@@ -1,0 +1,29 @@
+# recipes/code-bugfix.yaml — 버그 수정
+name: code-bugfix
+task_type: code-bugfix
+description: "'고쳐줘/버그/왜 깨져(수정의도)' — DEV debug→tdd→환경 테스트→review."
+executor: dev-suite
+validation_mode: [deterministic-only, executor-verifier]   # 중요/다중파일이면 verifier 동반
+reuses:
+  - harness-systematic-debugging      # DEV:debug — 근본원인
+  - harness-tdd-implementation        # DEV:tdd — 실패 재현 테스트→수정
+  - harness-code-quality-review       # DEV:review
+gate: plan-approval                   # 실행 전 AskUserQuestion
+steps:
+  - {id: 1, action: "근본원인 진단(가설→재현)", uses: "harness-systematic-debugging"}
+  - {id: 2, action: "실패 재현 테스트 작성(RED)→최소 수정(GREEN)", uses: "harness-tdd-implementation"}
+  - {id: 3, action: "환경 테스트 실행(결정적)", uses: "project test/lint/typecheck"}
+  - {id: 4, action: "코드 품질 검토(read-only verifier)", uses: "harness-code-quality-review"}
+budget: {max_iterations: 3, max_minutes: 30, repeat_fail_hold: 2}
+editable_paths: ["<버그 관련 src/** + 대응 tests/**>"]   # 계약 작성 시 구체화
+human_gates: []                       # 단순 수정은 게이트 없음(배포/push 시만)
+success_conditions:
+  - "재현 테스트 RED→GREEN"
+  - "기존 테스트 회귀 0(deterministic-only)"
+  - "DEV:review major 지적 0 또는 해소"
+hold_conditions:
+  - "같은 실패 2회(repeat_fail_hold)"
+  - "editable_paths 밖 수정 필요 → 재승인"
+  - "iter 3 / 30분 초과"
+escalation: "5회(circuit_breaker 상한) 미수렴 → 사용자 에스컬레이션"
+notes: "작은 단일 파일 수정 + 결정적 테스트 전부 PASS → executor-verifier(2단계 verifier) 생략 가능, 단 ledger 에 사유 기록."

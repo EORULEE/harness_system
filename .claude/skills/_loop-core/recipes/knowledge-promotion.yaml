@@ -1,0 +1,29 @@
+# recipes/knowledge-promotion.yaml — 지식 Wiki 승격
+name: knowledge-promotion
+task_type: knowledge-promotion
+description: "'Wiki 정본으로 올려/지식 승격'. source audit→Codex 반박→Claude 재검증→사용자 승인."
+executor: knowledge-promotion-gate
+validation_mode: [cross-model, human-gated]
+reuses:
+  - harness-claim-evidence-audit      # source audit
+  - hallucination_guard.py            # source_paths 실재 검증 보조(scoped)
+  - notes-app                          # 승인 후 vault 정본 이동
+gate: plan-approval
+steps:
+  - {id: 1, action: "source audit(주장-근거·source_paths 실재 검증)", uses: "harness-claim-evidence-audit + hallucination_guard"}
+  - {id: 2, action: "Codex 적대반박 1회", uses: "/codex:adversarial-review"}
+  - {id: 3, action: "Claude 재검증(Codex 결과는 정본 아님)", uses: "loop-verifier"}
+  - {id: 4, action: "사용자 승인 후 Wiki/vault 정본 이동", uses: "notes-app", when: "approved"}
+budget: {codex_review: 1, claude_reverify: 1}         # Codex 1회 + Claude 재검증 1회
+editable_paths: ["vault/wiki/**", "vault/decisions/**", "_output/loops/<loop_id>/**"]
+human_gates: ["Wiki 정본 승격(승인 전 이동 금지)"]
+cross_model: "Codex 적대반박(유료 — human-gated 동반). Codex 결과 ≠ 정본."
+success_conditions:
+  - "source audit 미확인 0"
+  - "Codex 지적 해소 + Claude 재검증 통과"
+  - "사용자 승인"
+hold_conditions:
+  - "승인 전 → Wiki 정본 이동 금지(HOLD)"
+  - "source 실재검증 실패"
+approved_destinations: [claims, decisions, experiments, methods]   # SYSTEM_RELEASE r2 정합
+notes: "harness memory(작업메모리) → 검증·재사용 가치 있는 것만 승격(중복 복제 X, 상호 링크)."

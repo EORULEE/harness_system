@@ -1,0 +1,6 @@
+id: py-func-def
+language: python
+severity: hint
+message: "python 함수 정의(구조) — claim 검증용 anchor"
+rule:
+  kind: function_definition

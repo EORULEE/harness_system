@@ -1,0 +1,23 @@
+# cross-domain-review-policy.yaml — 복합 도메인 교차 검증 (r5 adaptive)
+schema: cross_domain_review/v1
+reuse_engine: "scripts/challenge_manager.py(plan --pairs --scope / record / verify) — cross-pair challenge 오케스트레이션 재사용. 새 엔진 없음."
+trigger_conditions:    # 전부일 필요 없음 — 해당 시 cross-domain
+  - 요청이 실제로 2개 이상 도메인에 걸침
+  - 도메인 결론들이 서로 영향
+  - 결정적 테스트만으로 완전 판정 불가
+  - 오류 위험 MEDIUM 이상
+examples:
+  - { request: "InSAR 변위의 화산활동 해석", pairs: [insar-physical, volcanology] }
+  - { request: "위성·딥러닝 기반 SOC 접근성·격차", pairs: [soc-science, geospatial, model-experiment] }
+  - { request: "위성·사회경제 자료 홍수 취약성", pairs: [vulnerability, data-geospatial, statistics-experiment] }
+  - { request: "논문 Discussion", pairs: [writing, primary-science, "(필요시) method"] }
+rounds:
+  round_1: "동일 evidence bundle, 각 pair 독립 검토"
+  round_2: "상대 pair 전제·데이터범위·물리/통계 가정·인과성·일반화·반례 challenge"
+  round_3: "orchestrator 가 합의·충돌·수용/기각 반론·미해결 종합"
+codex:
+  when: "HIGH/CRITICAL 또는 사용자 요청"
+  scope: "evidence·contract·결론만 scope-isolated 전달. 전체 vault·transcript·secret 전달 금지."
+  authority: "Codex 결과는 정본 아님 — Claude 가 실제 source 로 재검증"
+record: [claim, evidence, assumption, counterexample, verdict, limitation, unresolved]   # chain-of-thought 기록 요구 금지
+output_templates: [evidence-map.yaml, round-1.md, cross-challenge.md, synthesis.md, verdict.yaml]

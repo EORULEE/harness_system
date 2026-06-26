@@ -1,0 +1,22 @@
+schema: pair_topology/v1
+project: proj-real-ledger
+level: full
+pairs:
+  - pair_id: science
+    axis: "1 domain science"
+    c_agent: c-science
+    x_agent: x-science
+    x_write_permission: none
+    maximum_iterations: 5
+  - pair_id: data
+    axis: "2 data provenance"
+    c_agent: c-data
+    x_agent: x-data
+    x_write_permission: none
+    maximum_iterations: 5
+  - pair_id: geo
+    axis: "3 geospatial"
+    c_agent: c-geo
+    x_agent: x-geo
+    x_write_permission: none
+    maximum_iterations: 5

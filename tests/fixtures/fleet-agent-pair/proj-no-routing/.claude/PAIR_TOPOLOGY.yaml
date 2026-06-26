@@ -1,0 +1,9 @@
+schema: pair_topology/v1
+project: proj-no-routing
+pairs:
+  - pair_id: nr
+    axis: "no routing"
+    c_agent: c-nr
+    x_agent: x-nr
+    x_write_permission: none
+    maximum_iterations: 5

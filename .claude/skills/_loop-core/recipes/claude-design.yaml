@@ -1,0 +1,28 @@
+# recipes/claude-design.yaml — Claude Design 슬라이드/디자인
+name: claude-design
+task_type: claude-design
+description: "'이 PPT 디자인 개선'. PROJECT_DESIGN·content-lock·asset allow-list 확인. 먼저 3장 파일럿만."
+executor: claude-design-bridge
+validation_mode: [deterministic-only, human-gated]
+reuses:
+  - mcp__claude_design__*             # Claude Design MCP(account-bound)
+  - DesignSync                        # /design-sync (사용자 승인 시만)
+gate: plan-approval
+steps:
+  - {id: 1, action: "PROJECT_DESIGN·content-lock·asset allow-list 확인", uses: "Report/design 어댑터"}
+  - {id: 2, action: "3장 파일럿만 생성(전체 아님)", uses: "render_preview/write_files"}
+  - {id: 3, action: "렌더 검증(Read 시각검증)", uses: "render_preview"}
+budget: {max_iterations: 2, repeat_fail_hold: 2}      # 최대 2회
+editable_paths: ["Report/design/**", "_output/loops/<loop_id>/**"]
+human_gates:
+  - "design-sync 실행"
+  - "Published(외부 발행)"
+  - "외부 공유"
+success_conditions:
+  - "3장 파일럿 렌더 PASS + content-lock·allow-list 준수"
+  - "secret 스캔 0"
+hold_conditions:
+  - "content-lock 밖 자산 필요 → 재승인"
+  - "렌더 검증 불가 → HOLD"
+forbidden: "design-sync·Published·외부 공유는 사용자 승인 전 금지. private 원본 미발행."
+notes: "정본=로컬, claude.ai=발행 사본. 먼저 3장 파일럿(전체 생성 아님)."

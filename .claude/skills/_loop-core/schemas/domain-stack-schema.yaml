@@ -1,0 +1,22 @@
+# domain-stack-schema.yaml — 5계층 도메인 판정 스키마 (r5 adaptive)
+# 프로젝트를 단일 도메인으로 축약 금지. 폴더명만으로 의미 확정 금지.
+schema: domain_stack/v1
+layers:
+  science_domains:     { examples: ["Social Overhead Capital", 취약성, 재난위험, 수문·홍수, 화산학] }
+  observation_domains: { examples: [광학위성, SAR, InSAR, 기상, 현장조사, 사회경제·인프라자료] }
+  method_domains:      { examples: [GIS, 공간통계, 계량경제, 머신러닝, 딥러닝, 세그멘테이션, 시계열, 접근성·네트워크분석] }
+  validation_domains:  { examples: [데이터품질, 공간누수, 시간누수, 재현성, 물리적타당성, 통계적타당성, 인과관계과장, 불확실성] }
+  output_domains:      { examples: [논문, 보고서, 정책자료, 특허, 발표자료, 지도·figure, HTML, HWP/DOCX] }
+evidence_priority:     # 도메인·용어 판정 근거 우선순위(높을수록 우선)
+  1: 사용자가 명시적으로 확정한 정의
+  2: PROJECT.yaml
+  3: README·CLAUDE.md
+  4: 코드·config
+  5: 데이터 schema·컬럼·metadata
+  6: 실험명·metric·checkpoint
+  7: 논문·보고서·제안서
+  8: kb·Wiki
+  9: 폴더명          # 단독 확정 금지
+detect_helper: "scripts/domain_detector.py(scan_file_structure·extract_imports·read_config_files) 재사용 — 객관 구조만 추출, 의미판정은 Claude+근거우선순위"
+output_artifacts: [PROJECT_DOMAIN_STACK.yaml, DOMAIN_EVIDENCE.md]
+note: "★ <project> 자체엔 연구 프로젝트용 가짜 도메인 내용을 만들지 않음 — 이 파일은 release schema/template."

@@ -1,0 +1,97 @@
+# recipes/visual-generation.yaml — 그림 생성(목적별 경로 라우팅)
+# 정본 라우팅 = _loop-core/loop-visual-routing-policy.md. 새 이미지 모델·오케스트레이터 미생성.
+name: visual-generation
+task_type: visual-generation
+description: "'그림 그려줘/개념도/인포그래픽/일러스트 만들어줘' → 목적·정확도 판단해 Claude SVG·NotebookLM·Gemini Nano Banana Pro·Lottie·Claude Design 중 라우팅."
+executor: visual-router            # harness-loop-engineering 이 경로 선택 후 기존 구성에 위임
+validation_mode: [deterministic-only, human-gated]   # 경로별 세부는 routes[].validation_mode
+reuses:
+  - "Claude SVG (로컬 벡터 작성)"
+  - notebooklm                     # source-grounded 인포그래픽/deck
+  - gemini                         # Nano Banana Pro(미배선→prompt package) / gemini-write
+  - harness-lottie-planner
+  - harness-text-to-lottie
+  - harness-lottie-export-review
+  - mcp__claude_design__*          # 배치/레이아웃
+gate: plan-approval                # 8항목 계획 + AskUserQuestion 7선택지(routing-policy §4)
+
+# ── 자동 선택 우선순위 (routing-policy §1) ──
+priority:
+  A: {when: "정확한 과학·기술 도식(개념도·구조·흐름·아키텍처·특허 선화·정확 화살표/라벨)", route: claude-svg}
+  B: {when: "제공 자료(논문/PDF/보고서) 기반 요약 인포그래픽·source-grounded deck", route: notebooklm}
+  C: {when: "사실적·창의적·고품질 이미지(hero·콘셉트 일러스트·텍스트 포함·스타일변환/편집)", route: nano-banana-pro}
+  D: {when: "움직임 필요(궤도·관측·처리 흐름 모션)", route: lottie}
+  E: {when: "슬라이드·HTML 전체 배치·레이아웃·디자인 시스템", route: claude-design}
+
+# ── 하드룰 (안전, routing-policy §2) ──
+hard_rules:
+  - "논문 정량 figure(성능 그래프·정량 chart·측정값 plot)·특허 정본 도면 → 생성형 이미지 모델(Nano Banana Pro) 금지 → 실제 데이터 기반 chart/SVG 강제."
+  - "**안전룰 > 사용자 선택**: 정량/특허 figure 요청이면 'Gemini Nano Banana Pro로 생성' 옵션을 **제시하지 않으며**, 사용자가 명시 선택해도 **거부(HOLD)** 하고 데이터 chart/SVG 로 전환(메뉴 우회 차단)."
+  - "생성형 이미지 속 수치·인용·라벨을 사실 근거로 사용 금지(장식/콘셉트 전용)."
+  - "어떤 경로도 과학적 정본 주장 금지. 실제 그림은 추출 우선(자작 금지)."
+
+# ── 경로별 recipe ──
+routes:
+  claude-svg:
+    use_for: [논문 개념도, 위성/센서/지표/수체 관측 구조, 처리 흐름도, 모델 아키텍처, 특허 참고 선화, 수정가능 벡터, 정확한 화살표/라벨/도형]
+    inputs: [목적, source(수치·센서명·축척·라벨 확인용)]
+    outputs: ["Report/design/assets/svg/*.svg", "(필요시) Report/design/exports/*.png|*.pdf preview", editable source]
+    validation_mode: [deterministic-only]
+    validation: [XML/SVG parse, 텍스트/라벨 확인, viewBox/종횡비, PNG preview 렌더(Read 시각검증), source 수치 대조]
+    human_gates: ["민감/private source 사용(content-lock deny 경로) — 로컬이라도 승인"]
+    rules: ["실제 수치/센서명/축척/라벨 source 확인", "scientific↔장식 illustration 구분", "특허 정본 주장 금지", "외부 업로드 없이 로컬",
+            "source 는 Report/design/content-lock.yaml allow 내(비민감)만 — private/Data/Experiments/secret source 면 '바로 만들어줘' 예외 적용 안 됨(민감자료 사용=human-gated)"]
+  notebooklm:
+    use_for: [논문/PDF/보고서 근거 인포그래픽, 다문서 핵심 설명, source-grounded deck, 교육/설명 시각요약]
+    inputs: [승인된 source 파일, 핵심 주장, audience, 스타일, content-lock]
+    outputs: ["Report/design/assets/raster/*.png (infographic)", "Report/design/exports/*.pptx|*.pdf (deck)"]
+    validation_mode: [deterministic-only, human-gated]
+    validation: [source allow-list, 수치/인용/주장 원문 대조, visual/factual 오류 검사]
+    human_gates: ["NotebookLM 자료 업로드(AskUserQuestion 승인 전 실행 금지)"]
+    upload_allowlist_sot: "Report/design/content-lock.yaml — allow/allow_conditional 만 업로드 후보(default-deny). references/private/**·Data/**·Experiments/**·secret·env·vault·memory 는 deny 명시(line 66)."
+    rules: ["private·Data·Experiments 원본·secret 업로드 금지(content-lock deny 강제)", "업로드 허용 = content-lock allow/allow_conditional 만(default-deny)", "생성 후 수치/인용/문구 원문 검증", "SVG 출력 주장 금지"]
+  nano-banana-pro:
+    use_for: [사실적 위성/지구/수체 콘셉트 일러스트, 발표 hero image, 고품질 시각설명, 한/영 텍스트 인포그래픽, 스타일변환/이미지편집]
+    inputs: [프롬프트, 스타일, (편집 시) 원본 이미지]
+    outputs: ["Report/design/assets/raster/*.png (API 배선 시)", "Report/design/references/*-prompt-package.md (미배선 기본)"]
+    validation_mode: [deterministic-only, human-gated]
+    validation: [prompt 준수, 텍스트 오탈자, 센서/위성/물리 구조 오류, content-lock 위반, 해상도/종횡비]
+    human_gates: ["Gemini 유료/API 호출(승인 전 실행 금지)", "원본 이미지 편집"]
+    rules: ["품질 우선 경로", "계정·quota 상태 먼저 확인", "API 없으면 prompt package 만(정직)", "이미지 속 수치/인용 사실근거 금지", "논문 정량 figure·특허 정본 금지(하드룰)"]
+    status: "미배선(현 gemini 텍스트 전용) → 기본 산출=prompt package. 배선 시 승인 후 호출."
+  lottie:
+    use_for: [HTML 보고서 간단 설명 애니메이션, 위성 궤도/관측/처리 흐름 모션]
+    inputs: [장면/duration/fps/종횡비/motion brief]
+    outputs: ["Report/design/assets/lottie/*.json"]
+    validation_mode: [deterministic-only]
+    validation: [parse, keyframe, blank render 위험, export review PASS/HOLD]
+    human_gates: []
+    rules: ["기존 harness-lottie-* + player 사용", "export review 전 삽입 금지"]
+  claude-design:
+    use_for: [생성 SVG/PNG/Lottie 슬라이드·HTML 배치, 발표 전체 레이아웃, 디자인 시스템 적용]
+    inputs: [생성 자산, 배치 의도, PROJECT_DESIGN/content-lock]
+    outputs: ["Report/design/exports/*(배치)"]
+    validation_mode: [deterministic-only, human-gated]
+    validation: [content-lock, 배치 렌더 검증, sync/publish 승인 확인]
+    human_gates: ["Claude Design sync", "Published/외부 공개"]
+    rules: ["이미지 자체 과학적 정본 아님", "content-lock 유지", "design-sync·Published 사용자 승인"]
+
+budget: {max_iterations: 2, repeat_fail_hold: 2}
+editable_paths: ["Report/design/**", "_output/loops/<loop_id>/**"]
+human_gates:
+  - "NotebookLM 자료 업로드"
+  - "Gemini 유료/API 호출"
+  - "Claude Design sync"
+  - "외부 공개"
+  - "원본 이미지 편집"
+  - "민감자료 사용"
+success_conditions:
+  - "선택 경로 검증(경로별 validation) PASS + 생성 래스터/렌더 Read 시각검증 → **사용자 시각 검토**(human-gated/외부 산출은 사용자 확인 필수)"
+  - "secret residual 0 · source attribution 기재"
+  - "정량/특허 figure 에 생성모델 미사용(하드룰 준수)"
+  - "업로드 산출은 content-lock allow 내에서만(private/민감 deny 준수)"
+hold_conditions:
+  - "정량/특허 figure 에 생성모델 라우팅(사용자 메뉴 선택 포함) → HOLD(데이터 chart/SVG 로 전환)"
+  - "NotebookLM 업로드/Gemini 호출/Design sync 승인 전 → HOLD"
+  - "렌더/parse 검증 불가 → HOLD"
+notes: "단순 로컬 SVG는 '바로 만들어줘' 명시 시 승인 없이 생성. 그 외 8항목 계획 + AskUserQuestion 7선택지(routing-policy §4)."

@@ -1,0 +1,5 @@
+schema: routing_matrix/v1
+rules:
+  simple: { pairs: 0, mode: one-shot }
+  single_domain: { pairs: 1, topology: intra-pair }
+  multi_domain: { pairs: '2~3', topology: cross-domain }

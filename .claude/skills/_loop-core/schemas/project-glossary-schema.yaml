@@ -1,0 +1,30 @@
+# project-glossary-schema.yaml — 용어·약어 판정 스키마 (r5 adaptive)
+schema: project_glossary/v1
+term_entry_fields: [term, selected_meaning, korean_label, status, confidence, source]
+status_values: [user-locked, high-confidence, candidate, unresolved, project-override]
+# ── 전역 user-locked 기본 의미 (사용자 확정, 조용한 override 금지) ──
+user_locked_global_terms:
+  - term: SOC
+    selected_meaning: Social Overhead Capital
+    korean_label: 사회간접자본
+    status: user-locked
+    confidence: 1.0
+    source: explicit-user-definition
+project_scope_conflict:
+  trigger: "프로젝트 source(코드/데이터/논문)가 SOC를 Soil Organic Carbon 또는 State of Charge로 명시"
+  rule:
+    - user-locked 기본 의미를 조용히 덮지 않는다
+    - project_scope_conflict 로 기록
+    - 해당 프로젝트만의 override 후보 제안(status=project-override)
+    - AskUserQuestion 으로 한 번 확인
+output_artifacts: [PROJECT_GLOSSARY.yaml, SEMANTIC_EVIDENCE.md, UNRESOLVED_TERMS.yaml]
+soc_validation_profile:   # SOC=Social Overhead Capital 검증 프로파일(과학/정책)
+  - 인프라 유형·분류
+  - 시설량·투자액·서비스수준 구분
+  - 명목·실질 금액과 기준연도
+  - 인구·면적·경제규모 정규화
+  - 접근성·서비스 커버리지
+  - 지역 간 불균형 · MAUP · 공간 자기상관
+  - 투자-성과 시간지연 · 상관vs인과 · 내생성·선택편향
+  - 정책 개입 전후 비교 · 외부효과 · 정책 일반화 범위
+  - 데이터 출처·갱신연도

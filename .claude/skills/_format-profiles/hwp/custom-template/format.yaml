@@ -1,0 +1,12 @@
+# format.yaml — HWP 양식 프로파일 템플릿 (복사해서 새 HWP 양식 추가)
+# 새 양식 = 이 디렉터리를 _format-profiles/hwp/<new-name>/ 로 복사 후 값 채우기.
+# skill 코드 무수정(AC4). 로딩 규약: profile-resolution-rules.md.
+
+name: custom-template            # 양식 식별자. 실제 양식명으로 교체.
+family: hwp
+engine: hancom-com               # HWP 는 한컴 COM(Windows). 표 양식은 hwp-table-style 재사용.
+reference_template: ""           # 레퍼런스 .hwp 경로(있으면). 없으면 빈 문자열.
+notes: |
+  HWP 양식 규칙: 원본 직접수정 금지 → 복사본 작업, 사용자 승인 후 적용(AC8).
+  표 양식은 기존 hwp-table-style 스킬 위임(렌더 이미지로 검증).
+  글꼴/색/셀배경 경계는 hwp-docx-format-rules.md 참조.

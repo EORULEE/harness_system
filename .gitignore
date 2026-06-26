@@ -1,0 +1,9 @@
+**/runtime/
+**/*session_log*.jsonl
+**/__pycache__/
+**/*.pyc
+**/.venv/
+*.env
+**/.credentials.json
+**/memory/
+**/*.bak*

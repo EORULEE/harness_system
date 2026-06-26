@@ -1,0 +1,35 @@
+# pair-topology-schema.yaml — 프로젝트별 c-/x- 페어 토폴로지 스키마 (r5 adaptive)
+schema: pair_topology/v1
+configuration_levels:
+  minimal:   { desc: "단순 문서·소규모 코드", permanent_pairs: "0~2" }
+  full:      { desc: "데이터·코드·실험·분석·논문·운영 반복 연구", permanent_pairs: "프로젝트 전체 기준 6~8 (도메인마다 아님)" }
+  upgrade:   { desc: "기존 pair 전부 보존, 누락 역할만 제안, 이름·역할·권한 임의변경 금지" }
+  temporary: { desc: "일회성 — 영구 agent 파일 안 만들고 임시 executor/verifier 사용" }
+role_axes:   # 영구 pair 기본 역할 축(프로젝트 전체 6~8)
+  - 1 domain science / policy
+  - 2 data provenance / integrity
+  - 3 geospatial / physical methods
+  - 4 code / ML·DL model
+  - 5 experiment / statistics / reproducibility
+  - 6 writing / claims / citations
+  - 7 visualization / communication
+  - 8 storage / operations / deployment
+primary_science_limit: "전용 pair 최대 2개. 3번째 이후 도메인 = domain profile 또는 temporary specialist."
+pair_fields: [pair_id, pair_name, domain_stack_refs, purpose, c_agent_name, c_agent_role, x_agent_name, x_agent_role,
+  trigger_conditions, non_trigger_conditions, inputs, outputs, allowed_tools, allowed_paths, forbidden_paths,
+  c_write_permission, x_write_permission, deterministic_verifiers, cross_model_policy, budget, maximum_iterations,
+  stop_conditions, escalation_conditions, artifacts, overlap_with_existing_skills, overlap_with_other_pairs, lifecycle, owner]
+permission_defaults:
+  c_agent: "allowed_paths 에만 Write/Edit"
+  x_agent: "Read/Grep/Search + 검증용 Bash만. Write/Edit 금지."
+  forbidden: [raw data 수정, verifier 가 산출물 수정, 삭제·배포·push·merge·외부업로드(사용자 승인)]
+release_templates: [PAIR_TOPOLOGY-schema, PAIR_COVERAGE_REPORT-template, ROUTING_MATRIX-schema]
+note: "★ 사용자 승인 전 실제 프로젝트의 영구 agent 파일 생성 금지. 기존 full 프로젝트(<example-project> 66 c/x·<example-project> 18) topology는 보존(축소 금지)."
+
+# ── onboarding agent 생성 정책 (2026-06-24, full 온보딩 1회 승인으로 실 agent 생성) ──
+onboarding_agent_creation:
+  full: "온보딩 AskUserQuestion에 '전체 온보딩 + 추천 6~8 pair 생성' 명시. 승인 시 같은 작업에서 실 c-/x- agent 파일 생성(별도 2차 승인 불요)."
+  minimal: "억지 생성 금지(0~2, 기본 0)."
+  upgrade: "기존 pair 전부 보존 + 누락 역할만 승인 범위에서 추가(이름·역할·권한 임의변경 금지)."
+  verification: "c/x 1:1·orphan 0·topology 참조누락 0·x-agent Write/Edit 0·overlay 무변경·secret 0·백업 tgz."
+  evidence_2026_06_24: "01_Flood 7·fusion 6·레이더 3=16쌍 생성·검증 PASS. 보유 <example-project> 19·과기부 9·원격탐사 7 보존(실제 매칭쌍, 전체 agent수≠쌍수)."

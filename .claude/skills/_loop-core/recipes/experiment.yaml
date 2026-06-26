@@ -1,0 +1,30 @@
+# recipes/experiment.yaml — 실험 비교(학습률·A/B 등)
+name: experiment
+task_type: experiment
+description: "'학습률 3개 비교/A/B 실험'. experiment contract 먼저. Mode C 는 사용자 승인 시만."
+executor: experiment-tracking
+validation_mode: [deterministic-only, human-gated]
+reuses:
+  - experiment_contract_validator.py  # metric/seed/budget/stop 필수 검증
+  - cycle.*.yaml                      # Mode C 인프라(있는 프로젝트만)
+gate: plan-approval
+steps:
+  - {id: 1, action: "experiment contract 작성(metric·seed·budget·stop 조건)", uses: "experiment_contract_validator.py"}
+  - {id: 2, action: "계약 검증(필수필드 누락 시 실행 금지)", uses: "experiment_contract_validator.py validate"}
+  - {id: 3, action: "스모크(1-run)만 — 본 실행은 승인 후", uses: "runner(smoke)"}
+  - {id: 4, action: "Mode C 실제 실행(사용자 승인 시만)", uses: "cycle.*.yaml", when: "approved"}
+  - {id: 5, action: "최종 모델 채택은 사용자 승인", when: "approved"}
+budget: {max_experiments: 3, repeat_fail_hold: 2}     # 기본 최대 3 실험
+editable_paths: ["experiments/**", "_output/loops/<loop_id>/**"]
+human_gates:
+  - "Mode C 실제 실행(승인 전 스모크만)"
+  - "최종 모델 채택"
+success_conditions:
+  - "metric·seed·budget·stop 전부 정의(누락 시 실행 금지)"
+  - "k-seed 유의성·고정 평가창 통과"
+hold_conditions:
+  - "metric/seed/budget/stop 누락 → 실행 금지(HOLD)"
+  - "divergence(NaN/발산) → kill"
+  - "3 실험 후 plateau"
+forbidden: "Mode C 자동 활성화 금지. 데이터 dtype 다운캐스팅 금지. 학습 로그 영속화 필수."
+notes: "Mode C 는 .claude/cycle.*.yaml 있는 프로젝트 + 사용자 명시 'C:'/'/cycle' 일 때만."

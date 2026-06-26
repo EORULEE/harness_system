@@ -1,0 +1,6 @@
+task_type: simple
+risk_tier: low
+selected_pairs: []
+validation_mode: one-shot
+review_topology: none
+prompt: "이 prompt 본문과 secret EXAMPLE_API_KEY=abc123 토큰은 수집되면 안 된다(privacy bait)"

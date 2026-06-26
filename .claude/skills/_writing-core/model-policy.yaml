@@ -1,0 +1,78 @@
+# model-policy.yaml — Writing Suite 모델 역할 정책 (Single Source of Truth)
+#
+# ⚠️ 범위(scope): 이 파일은 **신규 Writing Suite 레이어의 모델 역할 SoT**다.
+#    시스템 전체 SoT가 아니다 — 위임 백엔드(gemini-write/write.py, gemini-writer
+#    에이전트)는 자체 모델 체인을 보유하며 본 계약(Constraints)상 수정하지 않는다.
+#    본 파일은 그 백엔드 체인을 **문서화하고 정적 정합 대조(AC17)**한다.
+#
+# ⚠️ 이 파일은 Writing Suite에서 **모델명 리터럴이 등장하는 유일한 파일**이다(AC2 allowlist).
+#    skill SKILL.md·기타 *-rules.md 는 role 이름과 model_refs 키만 참조한다(모델명 금지).
+
+schema: model_policy
+version: 1.0
+scope: writing-suite          # new-suite layer SoT (NOT system-wide)
+
+# ── 역할 정의 (계약 모델정책 구조) ──────────────────────────────
+roles:
+  orchestrator:
+    who: claude
+    model_ref: opus_default
+    duties:
+      - 전체 오케스트레이션 (어떤 writer/format skill을 어떤 순서로)
+      - final integrity checker (사실·논리·요청부합 최종 검증)
+      - format controller (HWP/DOCX/HTML 구조 보호·파일 제어)
+    note: LLM 문장 생성보다 파일 제어·도구 검증을 우선한다.
+
+  primary_writer:
+    who: gemini
+    engine: gemini-write            # ~/.claude/skills/gemini-write (위임, 무수정)
+    delegate_via: gemini-writer     # ~/.claude/agents/gemini-writer.md (페르소나+검토 루프)
+    model_ref: gemini_pro_default
+    duties: [논문·보고서·제안서 초안 1차 작성]
+
+  fallback_writer:
+    who: chatgpt
+    engine: codex                   # codex 플러그인 app-server 경로
+    model_ref: chatgpt_default
+    duties: [primary_writer(Gemini) 실패 시 폴백 작성]
+
+  adversarial_reviewer:
+    who: chatgpt
+    engine: codex
+    model_ref: chatgpt_default
+    duties: [초안 적대 검토(약점·과장·근거부재 지적)]
+
+  structure_protection:
+    who: deterministic_tool         # python-docx / pyhwpx / hwp5proc 등
+    duties: [HWP/DOCX/HTML 구조는 LLM 문장보다 도구 검증 우선]
+
+# ── 모델명 단일 출처 (skill은 이 키만 참조) ─────────────────────
+model_refs:
+  opus_default: claude-opus-4-8
+  gemini_pro_default: gemini-3.1-pro-preview     # write.py 실제 백엔드와 정합(2026-06-23 r2: 2.5→3.x 코드기준 정렬)
+  gemini_flash_fallback: gemini-3.5-flash
+  chatgpt_default: gpt-5.5
+
+# ── 백엔드 실제 체인 문서화 (AC17 정적 대조 대상) ───────────────
+# write.py 가 런타임에 수행하는 폴백 체인. 본 선언이 write.py 와 일치해야 PASS.
+backend_chain:
+  reference_file: "~/.claude/skills/gemini-write/write.py"
+  primary: gemini-3.1-pro-preview     # write.py:213 default + :9 체인(2026-06-23 r2 정렬)
+  on_429: gemini-3.5-flash            # write.py:197-199
+  on_503: retry_with_backoff
+  on_total_gemini_failure: "chatgpt:gpt-5.5"   # codex app-server → bare codex exec
+  chatgpt_call_path: ["codex-companion.mjs (app-server)", "bare codex exec"]
+  note: "ChatGPT 계정은 gpt-5.5만 허용(*-codex/gpt-5.x 차단)."
+
+# ── 최종 폴백 graceful (AC22) ───────────────────────────────────
+graceful_terminal:
+  condition: "primary_writer(Gemini 빌링) AND fallback_writer(codex/ChatGPT) 둘 다 unavailable"
+  detect: "gemini.env 키 부재/429 지속 + codex companion 미발견 또는 계정 차단"
+  action:
+    - "orchestrator(Claude)가 직접 초안 작성으로 위임 (writer 경로 우회)"
+    - "또는 사용자에게 '전 writer 경로 불가' 에스컬레이션 후 중단"
+  forbid: ["크래시(RuntimeError 노출)", "무한 폴백 재시도"]
+  note: "이 머신은 codex companion 발견됨(폴백 가용). <machine>류 차단 환경 대비 규정."
+
+# ── 권위 ────────────────────────────────────────────────────────
+authority: "v4.5 stop-guard·hookify 최종 권위. 본 정책은 그 아래 종속."

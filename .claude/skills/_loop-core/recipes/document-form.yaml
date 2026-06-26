@@ -1,0 +1,27 @@
+# recipes/document-form.yaml — HWP/DOCX/HTML 양식 작업
+name: document-form
+task_type: document-form
+description: "HWP/DOCX/HTML 양식 적용. 원본 직접 수정 금지 — 사본에서만. apply→render/export review."
+executor: form-export-review
+validation_mode: [deterministic-only, human-gated]
+reuses:
+  - harness-hwp-template-style
+  - harness-docx-template-style
+  - harness-html-copy-polish
+  - harness-form-export-review        # 렌더/export 검증
+gate: plan-approval
+steps:
+  - {id: 1, action: "원본 → 사본 복사(원본 무수정)", uses: "cp(사본)"}
+  - {id: 2, action: "사본에 양식 적용", uses: "hwp/docx/html template-style"}
+  - {id: 3, action: "render/export 후 실제 결과 검증(Read 시각검증)", uses: "harness-form-export-review"}
+budget: {max_iterations: 2, repeat_fail_hold: 2}      # 최대 2회
+editable_paths: ["<원본 사본 경로>", "_output/loops/<loop_id>/**"]
+human_gates: ["외부 공유(Drive/serve)"]
+success_conditions:
+  - "렌더/export 결과가 레퍼런스 양식과 일치(시각검증 PASS)"
+  - "원본 파일 무변경(md5 대조)"
+hold_conditions:
+  - "실제 렌더 검증 불가 → HOLD(exit0 ≠ 정상)"
+  - "2회 후 미수렴"
+forbidden: "원본 직접 수정 금지. 한컴 interop 강제종료 반복 금지(drvfs 다운)."
+notes: "생성/렌더 그림은 Read(이미지)로 시각 재검증 후 '완성' 보고."

@@ -1,0 +1,62 @@
+# writing-contract-schema.yaml — 글쓰기 작업 명세 계약 스키마
+# (research_contract_schema.yaml 형식 차용. harness-deep-interview가 글쓰기 작업에
+#  적용될 때의 산출 형태. Ralph 완료검증의 입력.)
+
+schema: writing_contract
+version: 1.0
+
+required_fields:
+  - document_type        # AC5
+  - domain_profiles      # AC5 (복수 가능)
+  - format_profile       # AC5
+  - model_policy_ref     # AC5
+  - audience
+  - purpose
+  - acceptance_criteria
+  - outputs
+  - authority
+
+fields:
+  document_type:
+    type: enum
+    values: [paper, report, patent, slides, html, hwp, docx, general]
+    notes: "지원 문서유형. patent·slides는 명시호출 전용 skill로 scaffold(AC6)."
+
+  domain_profiles:
+    type: list
+    item: str
+    notes: "_domain-profiles/<name>/ 의 name 들. 도메인 비고정 — 추가는 프로파일만(AC3)."
+
+  format_profile:
+    type: object
+    fields:
+      family: {type: enum, values: [hwp, docx, html, none]}
+      name: {type: str, notes: "_format-profiles/<family>/<name>/"}
+    notes: "양식 분리(AC4·AC7). 원본 직접수정 금지·복사본 작업(AC8)."
+
+  model_policy_ref:
+    type: str
+    default: ".claude/skills/_writing-core/model-policy.yaml"
+    notes: "모델 역할 SoT 경로. skill은 role로만 요청(모델명 하드코딩 금지, AC2)."
+
+  audience: {type: str, notes: "심사위원/평가위원/일반 등"}
+  purpose: {type: str, notes: "게재설득/과제선정/정보전달 등"}
+
+  acceptance_criteria:
+    type: list
+    item: {type: str, notes: "테스트가능 체크박스 문장"}
+
+  outputs:
+    type: object
+    fields:
+      draft_path: {type: str, notes: "draft/복사본 경로 — 원본 아님(AC8)"}
+      meta: {type: str, notes: "페르소나·반복·사용엔진·[확인 필요]"}
+
+  claim_evidence_audit:
+    type: bool
+    default: true
+    notes: "모든 writing workflow에 claim-evidence audit 연결(AC10)."
+
+  authority:
+    type: str
+    default: "v4.5 stop-guard·hookify 최종 권위"

@@ -1,0 +1,53 @@
+# system-source-map.TEMPLATE.yaml — 범용 (어느 하네스 프로젝트나 사용)
+# 사용법: 새 프로젝트에 이 파일을 .claude/skills/_evidence-core/system-source-map.yaml 로 복사 후
+#   ① harness 라벨 수정 ② 프로젝트-특화 도메인(아래 OPTIONAL) 추가/삭제.
+# scripts/system_truth_{indexer,probe}.py 는 ROOT(=parent of scripts/) 상대라 그대로 portable.
+# risk: index_ok(존재/메타 답 OK) · must_read(로직/정확값 항상 read) · presence_only(stat만)
+harness: "<PROJECT> harness"
+
+domains:
+  # ── 공통 코어 (대부분의 하네스 프로젝트에 존재) ──
+  skills:
+    glob: ".claude/skills/*/SKILL.md"
+    collector: skill_frontmatter
+    risk: index_ok
+    answers: ["스킬 존재/위치", "dmi", "allowed-tools"]
+  settings_skilloverrides:
+    file: ".claude/settings.local.json"
+    collector: json_skilloverrides
+    risk: index_ok
+  hooks:
+    glob: "hooks/*.mjs"
+    collector: file_hash_list
+    risk: index_ok
+  hookify:
+    glob: ".claude/hookify.*.local.md"
+    collector: hookify_action
+    risk: index_ok
+  scripts:
+    glob: "scripts/*.py"
+    collector: file_hash_list
+    risk: must_read
+    answers: ["스크립트 파일 hash(변경 감지)"]
+    note: "로직은 항상 파일 read(+ast-grep 구조 anchor)"
+  mode_c_cycles:
+    glob: ".claude/cycle.*.yaml"
+    collector: glob_exists
+    risk: index_ok
+  env_secrets:
+    files: ["~/.claude/gemini.env", "~/.claude/gemini-free.env", "~/.claude/kb.env", ".claude/kb.env"]
+    collector: presence_only
+    risk: presence_only
+    note: "stat만 — 내용 안 읽음(secret)"
+
+  # ── OPTIONAL 프로젝트-특화 (해당 프로젝트에 있을 때만; grep_anchor는 정확값=must_read) ──
+  # research_report_anchors:
+  #   file: "~/.claude/lib/research_report_html.py"
+  #   collector: grep_anchor
+  #   patterns: ["def build_table", "<th>"]
+  #   risk: must_read
+  # custom_anchors:
+  #   file: "<프로젝트 핵심 .py>"
+  #   collector: grep_anchor
+  #   patterns: ["def <핵심함수>"]
+  #   risk: must_read

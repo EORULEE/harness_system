@@ -1,0 +1,9 @@
+schema: pair_topology/v1
+project: proj-static
+pairs:
+  - pair_id: s
+    axis: "single"
+    c_agent: c-s
+    x_agent: x-s
+    x_write_permission: none
+    maximum_iterations: 5

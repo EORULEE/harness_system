@@ -1,0 +1,7 @@
+schema: loop_contract
+loop_id: fact-check-L1
+task_type: fact-check
+recipe: fact-check
+validation_mode:
+  - executor-verifier
+review_topology: intra-pair

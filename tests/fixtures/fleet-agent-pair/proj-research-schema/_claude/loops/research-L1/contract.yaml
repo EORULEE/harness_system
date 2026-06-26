@@ -1,0 +1,5 @@
+schema: loop_contract
+loop_id: research-L1
+task_type: research
+recipe: research
+review_topology: cross-domain

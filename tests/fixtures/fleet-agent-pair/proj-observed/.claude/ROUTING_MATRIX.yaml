@@ -1,0 +1,3 @@
+schema: routing_matrix/v1
+rules:
+  single_domain: { pairs: 1, topology: intra-pair }

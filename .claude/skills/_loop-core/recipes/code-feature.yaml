@@ -1,0 +1,31 @@
+# recipes/code-feature.yaml — 새 기능 구현
+name: code-feature
+task_type: code-feature
+description: "'구현해줘/추가해줘/만들어줘'(신규 기능). 모호하면 deep-interview, 중요하면 Ralph."
+executor: dev-suite
+validation_mode: [executor-verifier]        # 보안·아키텍처·대규모면 + cross-model + Ralph
+reuses:
+  - harness-deep-interview            # 모호 시 명세계약(반자동 — 1줄 확인 후)
+  - harness-tdd-implementation        # DEV:tdd
+  - harness-code-quality-review       # DEV:review
+  - harness-ralph                     # 완료 검증(중요 작업)
+gate: plan-approval
+steps:
+  - {id: 1, action: "모호도 판별 → 모호하면 deep-interview 로 명세계약(수용기준)", uses: "harness-deep-interview", when: "ambiguous"}
+  - {id: 2, action: "수용기준 기반 TDD 구현", uses: "harness-tdd-implementation"}
+  - {id: 3, action: "환경 테스트 실행(결정적)", uses: "project test/lint/typecheck/build"}
+  - {id: 4, action: "코드 품질 검토(read-only verifier)", uses: "harness-code-quality-review"}
+  - {id: 5, action: "완료 검증(기준별 fresh evidence)", uses: "harness-ralph", when: "multi-file|protected|core-arch|spec-contract"}
+budget: {max_iterations: 3, max_minutes: 30, repeat_fail_hold: 2}   # Ralph circuit_breaker ≤5
+editable_paths: ["<기능 관련 src/** + tests/**>"]
+human_gates: ["deep-interview 명세계약 승인(구현·커밋 전)"]
+cross_model: "보안·아키텍처·대규모 수정 시 /codex:adversarial-review 추가(human-gated 동반)"
+success_conditions:
+  - "deep-interview 수용기준 전부 충족(Ralph fresh evidence)"
+  - "기존 테스트 회귀 0"
+  - "DEV:review major 0 또는 해소"
+hold_conditions:
+  - "수용기준 미수렴 5회 → 에스컬레이션"
+  - "editable_paths 밖/보호파일 수정 필요 → 재승인"
+  - "budget 초과"
+ralph_skip: "작은 단일 파일 + 결정적 테스트 전부 PASS 시 Ralph 생략 가능 — ledger 에 사유 기록(다중파일/보호파일/핵심아키텍처/명세계약 있으면 생략 불가)."

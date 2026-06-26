@@ -1,0 +1,51 @@
+schema: pair_topology/v1
+project: proj-full-fixture
+level: full
+pairs:
+  - pair_id: science
+    axis: "1 domain science"
+    c_agent: c-science
+    x_agent: x-science
+    c_write_permission: allowed_paths-only
+    x_write_permission: none
+    deterministic_verifiers: [compile, test, metric, schema]
+    cross_model_policy: "HIGH/CRITICAL 시 Codex 1회"
+    maximum_iterations: 5
+    stop_conditions: [동일실패2, 전역5, source부족]
+  - pair_id: model
+    axis: "4 code/ML"
+    c_agent: c-model
+    x_agent: x-model
+    c_write_permission: allowed_paths-only
+    x_write_permission: none
+    c_agent_sha256: 0000000000000000000000000000000000000000000000000000000000000000
+    deterministic_verifiers: [compile, test]
+    cross_model_policy: "Codex 1회"
+    maximum_iterations: 5
+    stop_conditions: [동일실패2, 전역5]
+  - pair_id: data
+    axis: "2 data provenance"
+    c_agent: c-data
+    x_agent: x-data
+    c_write_permission: allowed_paths-only
+    x_write_permission: none
+    deterministic_verifiers: [schema]
+    maximum_iterations: 5
+    stop_conditions: [동일실패2, 전역5]
+  - pair_id: geo
+    axis: "3 geospatial"
+    c_agent: c-geo
+    x_agent: x-geo
+    c_write_permission: allowed_paths-only
+    x_write_permission: none
+    deterministic_verifiers: [metric]
+    maximum_iterations: 5
+    stop_conditions: [동일실패2, 전역5]
+  - pair_id: audit
+    axis: "5 audit"
+    c_agent: c-audit
+    x_agent: x-audit
+    x_write_permission: none
+    deterministic_verifiers: [schema]
+    maximum_iterations: 5
+    stop_conditions: [동일실패2, 전역5]

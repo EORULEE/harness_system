@@ -1,0 +1,11 @@
+schema: loop_contract
+loop_id: research-20260624-232055-350e
+task_type: research
+recipe: research
+validation_mode:
+  - executor-verifier      # read-only
+  - cross-model
+review_topology: cross-domain
+selected_pairs:
+  - "1-domain-science"       # c-science / x-science
+  - "2-data-provenance"      # c-data / x-data

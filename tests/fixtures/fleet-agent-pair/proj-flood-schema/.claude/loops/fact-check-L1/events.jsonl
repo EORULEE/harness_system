@@ -1,0 +1,5 @@
+{"event":"start"}
+{"event":"verifier_c_science","data":{"role":"constructive","agent":"Explore(read-only)","verdict":"HIGH"}}
+{"event":"verifier_x_science","data":{"role":"adversarial","agent":"Explore(read-only)","verdict":"조건부 기각"}}
+{"event":"synthesis"}
+{"event":"finalize","data":{"verdict":"PASS"}}

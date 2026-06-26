@@ -1,0 +1,12 @@
+schema: pair_topology/v1
+pairs:
+  - pair_id: insar
+    axis: "insar"
+    c_agent: c-insar
+    x_agent: x-insar
+    x_write_permission: none
+  - pair_id: sar
+    axis: "sar"
+    c_agent: c-sar
+    x_agent: x-sar
+    x_write_permission: none

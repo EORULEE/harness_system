@@ -1,0 +1,34 @@
+# system-index-schema.yaml — system_truth_index.json 구조 명세 (문서용)
+# 실제 index = .claude/runtime/system_truth_index.json (indexer 생성물)
+
+index_json:
+  generated_at: "ISO8601 — indexer 실행 시각"
+  harness: "<project> v6 (source-map에서)"
+  source_map_sha256: "구동한 source-map.yaml의 hash"
+  domain_count: "도메인 수"
+  domains:
+    "<domain_name>":
+      collector: "skill_frontmatter | json_skilloverrides | file_hash_list | hookify_action | grep_anchor | presence_list | glob_exists | presence_only"
+      risk: "index_ok | must_read | presence_only"
+      answers: ["이 도메인이 답할 수 있는 질문 유형"]
+      items:
+        # collector별 item 형태:
+        skill_frontmatter: "{name, path, sha256, mtime, dmi, allowed_tools, desc1}"
+        json_skilloverrides: "{path, sha256, mtime, model, overrides:{key:value}}"
+        file_hash_list: "{path, sha256, mtime}"
+        hookify_action: "{rule, path, sha256, mtime, event, action, enabled}"
+        grep_anchor: "{file, sha256, mtime, anchors:[{pattern, line, snippet(redacted,≤120자)}]}"
+        presence_list: "{path, exists, is_dir, sha256(파일만), mtime, child_count(dir)}"
+        glob_exists: "{pattern, exists, matches:[names]}"
+        presence_only: "{path, exists, mtime}  # 내용/hash 없음(secret)"
+  files_hash:
+    "<path>": "{sha256, mtime}  # 신선도 게이트용 전체 파일 해시맵(secret 제외)"
+
+staleness:
+  방식: "probe가 index의 files_hash[path].sha256 vs 현재 파일 sha256 비교. 불일치 → stale → 파일 read로 강등."
+  presence_only: "secret 파일은 hash 없음 → mtime 변화만 참고(내용 검증은 안 함)."
+
+artifacts:
+  - ".claude/runtime/system_truth_index.json   # 본 index"
+  - ".claude/runtime/system_truth_index.sha256  # index.json 자체 hash(무결성)"
+  - ".claude/runtime/system_truth_index.log     # 실행 로그(변경/신규/미변경 diff·경고)"

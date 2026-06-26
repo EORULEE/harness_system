@@ -1,0 +1,95 @@
+# system-source-map.yaml — 사실도메인 → 원천파일 + collector + risk
+# Evidence Index v1. 이 맵이 indexer를 구동한다(도메인 추가=여기만 편집).
+# risk: index_ok(존재/메타는 index로 답 OK) · must_read(로직/정확값은 항상 파일 read) · presence_only(stat만, 내용 X)
+harness: "<project> v6"
+
+domains:
+  skills:
+    glob: ".claude/skills/*/SKILL.md"
+    collector: skill_frontmatter
+    risk: index_ok
+    answers: ["스킬 존재/위치", "dmi 값", "allowed-tools", "description 1줄"]
+    note: "본문 동작·로직 질문은 must_read로 강등(rules §3)"
+
+  settings_skilloverrides:
+    file: ".claude/settings.local.json"
+    collector: json_skilloverrides
+    risk: index_ok
+    answers: ["skillOverrides 키·값(user-invocable-only 등)", "model pin"]
+
+  hooks:
+    glob: "hooks/*.mjs"
+    collector: file_hash_list
+    risk: index_ok
+    answers: ["훅 파일 존재/목록"]
+
+  hookify:
+    glob: ".claude/hookify.*.local.md"
+    collector: hookify_action
+    risk: index_ok
+    answers: ["hookify 규칙 action(block/warn)·event·enabled"]
+    note: "패턴/조건 본문은 must_read"
+
+  stop_guard:
+    files: ["hooks/stop.mjs", "scripts/session_logger.py", "scripts/circuit_breaker.py"]
+    collector: file_hash_list
+    risk: must_read
+    answers: ["stop-guard 파일 hash(변경 감지)"]
+    note: "로직·차단조건은 항상 파일 read"
+
+  research_report_anchors:
+    file: "~/.claude/lib/research_report_html.py"
+    collector: grep_anchor
+    patterns: ["def build_table", "def build_simple", "def build", "<th>"]
+    risk: must_read
+    answers: ["함수/컬럼 위치 anchor(:line)"]
+    note: "컬럼·동작 정확값은 anchor로 위치만 — 답은 그 line read(이전 실패 도메인)"
+
+  multi_research_policy:
+    file: "~/.claude/lib/multi_research.py"
+    collector: grep_anchor
+    patterns: ["CALLERS =", "--models", "Gemini 제외", "def "]
+    risk: must_read
+    answers: ["조사 모델 정책 anchor(CALLERS)"]
+
+  writing_router_alias:
+    file: "docs/writing-short-commands-v6.md"
+    collector: grep_anchor
+    patterns: ["`WR:", "`FMT:", "`DEV:"]
+    risk: index_ok
+    answers: ["Writing Router alias 목록"]
+
+  lottie_status:
+    files: ["tools/lottie-embed/export_video.py", "_output/figures/lottie/reviews"]
+    collector: presence_list
+    risk: index_ok
+    answers: ["Lottie 인프라/리뷰 파일 존재"]
+
+  llm_wiki_skills:
+    glob: ".claude/skills/harness-wiki-*/SKILL.md"
+    collector: skill_frontmatter
+    risk: index_ok
+    answers: ["LLM Wiki 스킬 목록"]
+
+  experiment_skills:
+    globs:
+      - ".claude/skills/harness-experiment-*/SKILL.md"
+      - ".claude/skills/harness-sweep-summary/SKILL.md"
+      - ".claude/skills/harness-storage-audit/SKILL.md"
+      - ".claude/skills/harness-llm-wiki-promote/SKILL.md"
+    collector: skill_frontmatter
+    risk: index_ok
+    answers: ["실험추적 스킬 목록"]
+
+  mode_c_cycles:
+    glob: ".claude/cycle.*.yaml"
+    collector: glob_exists
+    risk: index_ok
+    answers: ["Mode C cycle.*.yaml 존재 여부(없으면 Mode C 비활성)"]
+
+  env_secrets:
+    files: ["~/.claude/gemini.env", "~/.claude/gemini-free.env", "~/.claude/kb.env", ".claude/kb.env"]
+    collector: presence_only
+    risk: presence_only
+    answers: ["secret/env 파일 존재 여부(내용 X)"]
+    note: "rule §5 — 내용 읽지 않음·hash 안 함·stat(존재·mtime)만"

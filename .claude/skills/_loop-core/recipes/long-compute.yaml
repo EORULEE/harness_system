@@ -1,0 +1,23 @@
+# recipes/long-compute.yaml — 장기 연산(학습·백업 등)
+name: long-compute
+task_type: long-compute
+description: "오래 걸리는 연산. 모델 반복 loop 로 처리하지 않음 — nohup/tmux 로 실행, watcher 는 완료/로그만."
+executor: nohup-tmux
+validation_mode: [deterministic-only]   # 완료 여부·로그만 감시
+reuses: []
+gate: plan-approval
+steps:
+  - {id: 1, action: "대상 서버에서 nohup/tmux persistent 기동(세션 무관 생존, 로그 영속화)", uses: "nohup/tmux"}
+  - {id: 2, action: "watcher = 완료 여부 + 로그만 감시(진행델타로 생존판정)", uses: "run_in_background/Monitor"}
+  - {id: 3, action: "완료 감지 시 산출·합성", uses: "claude-main"}
+budget: {model_loop: 0, repeat_fail_hold: 1}          # 모델 반복 loop 금지
+editable_paths: ["logs/**", "_output/loops/<loop_id>/**"]
+human_gates: ["학습 실행(DL 2대 규율: 코드 완성 시 실행 전 사용자 승인)"]
+success_conditions:
+  - "프로세스 생존(진행델타 2개↑ 교차) + 로그 영속화"
+  - "완료 감지 → 산출"
+hold_conditions:
+  - "진행 델타 정지(pgrep -f 단독 판정 금지 — mtime/size 델타 + pgrep -x 교차)"
+  - "divergence(NaN/발산)"
+forbidden: "모델 반복 loop 로 장기연산 돌리지 않음. /schedule·/loop dynamic self-pacing 회피."
+notes: "모니터링 2구조: 무거운 연산=서버 nohup/tmux / 모니터링+합성=현 세션 run_in_background 완료감지."

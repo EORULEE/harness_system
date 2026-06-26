@@ -1,0 +1,16 @@
+# recipes/code-question.yaml — 코드에 대한 질문(수정 아님)
+name: code-question
+task_type: code-question
+description: "'이 함수 무슨 역할이야?', '왜 이렇게 동작해?' 등 코드 이해 질문. 수정루프 미발화."
+executor: claude-main
+validation_mode: [one-shot]
+reuses: []
+gate: none
+steps:
+  - {id: 1, action: "관련 코드 Read/Grep 후 근거(file:line)와 함께 설명", uses: "Read/Grep/Serena"}
+budget: {max_iterations: 1, max_minutes: 5, repeat_fail_hold: 1}
+editable_paths: []               # 읽기 전용 — 수정 0
+human_gates: []
+success_conditions: ["코드 동작을 file:line 근거로 설명"]
+hold_conditions: ["사용자가 이어서 '고쳐줘'라고 하면 code-bugfix/code-feature 로 재라우팅"]
+notes: "⚠️ 코드 질문은 DEV 수정루프를 시작하지 않는다(명시적 수정의도가 있을 때만)."

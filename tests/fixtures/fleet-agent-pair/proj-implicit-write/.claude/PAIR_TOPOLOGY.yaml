@@ -1,0 +1,9 @@
+schema: pair_topology/v1
+project: proj-implicit-write
+pairs:
+  - pair_id: iw
+    axis: "implicit write"
+    c_agent: c-iw
+    x_agent: x-iw
+    x_write_permission: none
+    maximum_iterations: 5

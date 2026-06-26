@@ -1,0 +1,10 @@
+schema: routing_matrix/v1
+project: proj-full-fixture
+rules:
+  simple: { pairs: 0, mode: one-shot }
+  deterministic_small_fix: { pairs: 0, fix_max: 3 }
+  single_domain: { pairs: 1, topology: intra-pair, passes: 2 }
+  multi_domain: { pairs: '2~3', topology: cross-domain, passes: '2~3' }
+  external_submission: { codex: 1, human_gate: true }
+  limits: { same_failure: 2, global_max: 5 }
+router: scripts/adaptive_verification_router.py

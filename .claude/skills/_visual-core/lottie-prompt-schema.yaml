@@ -1,0 +1,29 @@
+# Animation Brief 스키마 — harness-lottie-planner 산출물의 표준 형식
+# 저장: _output/figures/lottie/prompts/<이름>.brief.md (본 스키마의 yaml 블록 포함)
+brief:
+  name: ""                  # kebab-case 파일명용
+  purpose: ""               # 이 애니메이션이 설명하려는 것 (1-2문장)
+  usage: ""                 # html-report | html-slide | gif-export(ppt/hwp) | standalone
+  audience: ""              # 보고서 독자/발표 청중
+  scenes:                   # 장면 순서 — upstream 권고: 카메라 오퍼레이터처럼 기술
+    - order: 1
+      description: ""      # 무엇이 어떻게 움직이는가
+      frames: [0, 0]       # [시작, 끝] 프레임
+  timing:
+    fps: 60                # upstream 기본 60
+    frame_count: 120       # = op. duration_s = frame_count / fps
+    duration_s: 2.0
+  canvas:
+    w: 512
+    h: 512
+    aspect_ratio: "1:1"    # 리포트/슬라이드 배치 기준으로 선택
+  motion_language: []      # ease-in | ease-out | ease-in-out | linear | camera-push | pan | zoom ...
+  controls_requested:      # 노출할 슬롯 (bgColor는 플레이어 검증용이면 upstream 의무)
+    - sid: "bgColor"
+      label: "Background color"
+  background: ""           # transparent | 리포트 테마색(베이크) | 슬롯 기본값
+  assets: []               # 근거 SVG/데이터/스크린샷 경로 (upstream 권고: ground the model)
+  constraints: []          # 보존할 기하·금지사항 등
+  notes: ""
+# 한계 고지(모든 brief에 포함): Lottie = 설명용 motion graphic.
+# 정밀 과학 데이터 figure 아님 · 특허 도면 정본 사용 금지 · secret 원문 금지.

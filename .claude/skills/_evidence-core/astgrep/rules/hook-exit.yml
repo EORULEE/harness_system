@@ -1,0 +1,6 @@
+id: hook-process-exit
+language: javascript
+severity: hint
+message: "hook 실제 exit 호출(process.exit) — 주석/문자열 제외, AST 호출만"
+rule:
+  pattern: process.exit($CODE)

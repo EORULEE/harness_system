@@ -1,0 +1,16 @@
+# recipes/simple-question.yaml — 단순 질문·상태조회·파일읽기·짧은 문장수정
+name: simple-question
+task_type: simple-question
+description: "설명·상태조회·파일 읽기·1문장 수정 등 저위험 단발 요청."
+executor: claude-main
+validation_mode: [one-shot]
+reuses: []                       # 추가 skill/agent 없음
+gate: none                       # AskUserQuestion 미발화(계약 생성 안 함)
+steps:
+  - {id: 1, action: "즉답(필요 시 파일 1~2개 Read)", uses: "Read/Grep"}
+budget: {max_iterations: 1, max_minutes: 5, repeat_fail_hold: 1}
+editable_paths: []               # 짧은 문장수정만 — 해당 1파일에 한정(요청 시 명시)
+human_gates: []
+success_conditions: ["질문에 근거와 함께 답함"]
+hold_conditions: ["사실이 불확실 → 'Unverified' 표기(추가 조사로 승격은 별 recipe)"]
+notes: "loop·verifier 미사용. 과한 게이트 금지."

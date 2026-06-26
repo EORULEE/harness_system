@@ -1,0 +1,6 @@
+task_type: external_submission
+selected_pairs: [science]
+codex_used: true
+codex_as_source_truth: true
+human_gate: true
+completed_at: 2026-06-17T03:00:00Z

@@ -1,0 +1,32 @@
+# recipes/writing.yaml — 글쓰기(논문·보고서·제안서 등)
+name: writing
+task_type: writing
+description: "'다듬어줘/보고서 써줘/polish'. Writing Suite 사용. draft→claim-evidence audit→polish."
+executor: writing-suite
+validation_mode: [deterministic-only, human-gated]   # 특허·중요 factual claim 은 + cross-model
+reuses:
+  - harness-writing-router            # 짧은 요청 라우팅
+  - harness-writing-planner
+  - harness-report-writer             # 또는 harness-paper-writer / gemini-writer
+  - harness-claim-evidence-audit      # claim-evidence 감사(필수 단계)
+  - harness-writing-polish
+  - harness-patent-assist             # 특허일 때
+gate: plan-approval
+steps:
+  - {id: 1, action: "초안(draft)", uses: "report/paper-writer 또는 gemini-writer"}
+  - {id: 2, action: "claim-evidence audit(주장-근거 표, 미확인 카운트)", uses: "harness-claim-evidence-audit"}
+  - {id: 3, action: "polish(문체·요청부합)", uses: "harness-writing-polish"}
+budget: {max_iterations: 2, repeat_fail_hold: 2}      # 기본 최대 2회
+editable_paths: ["<대상 문서 사본 경로>", "_output/loops/<loop_id>/**"]
+human_gates:
+  - "특허·중요 factual claim → cross-model 검토 + 사용자 승인"
+  - "미확인 claim 잔존 시 확정 전 사용자 게이트"
+cross_model: "특허·중요 주장은 Codex/ChatGPT cross-model 검토"
+success_conditions:
+  - "미확인/미확보 claim = 0 또는 [확인 필요] 마킹 + 보고"
+  - "요청 부합(목적·독자·문체)"
+hold_conditions:
+  - "수치·인용·DOI·표/그림 번호 변경 필요 → 금지(원본 유지) → 사용자 확인"
+  - "2회 후에도 미수렴"
+forbidden: "수치·인용·DOI·표·그림 번호 임의 변경 금지."
+notes: "원본 직접 수정 금지 — 사본에서 작업(원본보호 hookify=warn 과 정합)."

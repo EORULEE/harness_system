@@ -1,0 +1,6 @@
+id: py-sys-exit
+language: python
+severity: hint
+message: "python 실제 exit 호출(sys.exit) — 주석/문자열 제외"
+rule:
+  pattern: sys.exit($CODE)

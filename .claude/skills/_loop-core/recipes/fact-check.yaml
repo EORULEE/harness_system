@@ -1,0 +1,17 @@
+# recipes/fact-check.yaml — 단순 사실 확인(단발)
+name: fact-check
+task_type: fact-check
+description: "'이거 사실이야?', '버전 맞아?' 같은 단발 확인. one-shot. 광범위면 research 로."
+executor: claude-main
+validation_mode: [one-shot]
+reuses:
+  - gemini-docs-search                # 라이브러리/표준 docs 확인(선택)
+gate: none                            # 가벼우면 즉시; 광범위 조사로 보이면 'research 로 갈지' 1줄 확인
+steps:
+  - {id: 1, action: "1~2개 출처로 확인(WebSearch/docs-search/Read) 후 근거와 함께 답", uses: "WebSearch/gemini-docs-search"}
+budget: {max_iterations: 1, max_minutes: 5, repeat_fail_hold: 1}
+editable_paths: [".claude/references/**"]   # 검증한 외부사실 영구저장만(선택)
+human_gates: []
+success_conditions: ["확인된 사실은 단정+출처, 미확인은 'Unverified'"]
+hold_conditions: ["단발로 확인 불가·논쟁적 → research recipe 로 승격 제안"]
+notes: "verify-or-abstain: 확인했으면 단정+근거, 못했으면 '확실치 않음'. 날조 금지."
