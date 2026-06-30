@@ -8,6 +8,8 @@
 - **Claude Code**(호스트) · **python3 ≥3.9 + PyYAML** · **node ≥18**
 - 외부 pip 의존은 **PyYAML 하나뿐**(나머지는 전부 표준 라이브러리). 시스템 python/node 를 *업그레이드·교체하지 말고* 격리 환경을 쓰세요 — 당신이 이미 쓰던 conda·프로젝트 환경이 망가지지 않습니다.
 
+> **"격리 env" 가 뭔가요?** = 이 하네스 전용 python 공간(방)을 따로 하나 만드는 것. *PyYAML 설치 ≠ 격리 env* — **① 방을 만들고 ② 그 방에 PyYAML 을 넣는** 2단계입니다(아래 한 줄이 둘을 합침). `conda`·`venv` 가 그 방을 만드는 도구이고, **docker 와 개념은 같지만 훨씬 가볍습니다**(docker=OS 통째 격리/과함, conda·venv=python 만 격리/권장). 이미 python ≥3.9 인 conda env 가 있으면 새로 안 만들고 거기에 `conda install pyyaml` 만 해도 됩니다.
+
 **옵션 A — conda (이미 쓰고 있다면 권장)**
 ```bash
 conda create -n harness python=3.12 pyyaml -y
