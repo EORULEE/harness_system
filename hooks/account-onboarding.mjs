@@ -27,6 +27,7 @@ const msg =
   "    ⓒ **Codex+ChatGPT**(코드 적대검토, §3): 플러그인 설치 + 본인 ChatGPT 인증 절차를 단계별 안내.\n" +
   "    ⓓ **연구 MCP**(§4): '**지금 본인 계정으로 연구 MCP(semantic-scholar·paper-search·github·serena)를 추가해 드릴까요?**' 하고 먼저 제안 → **동의하면 `bash scripts/setup_mcp.sh` 를 직접 실행**하고 `claude mcp list` 로 `✔ Connected` 확인까지 보여줘라(키 필요한 서버는 본인 것 입력 안내).\n" +
   " ⚠️ 개인정보 보호로 KB(reference manager·notes app)·Drive·Fleet·일부 글쓰기 스킬·MCP 서버는 미포함 — 친구가 자기 것으로 구성(SETUP.md §3).\n" +
+  " ℹ️ 사용자가 '이미 글로벌 Claude 설정이 있다 / smoke 가 실패한다'고 걱정하면: 이 하네스는 **프로젝트 로컬**(`$CLAUDE_PROJECT_DIR/.claude`)이라 글로벌 `~/.claude` 를 덮어쓰지 않고, smoke 는 임시폴더 자기완결이라 글로벌과 무관하다고 안내(실패 원인은 대개 [A] python/PyYAML/node). 제거=clone 폴더 삭제. 상세=SETUP.md '문제 해결'.\n" +
   "설정/결정이 끝나면 `touch .claude/.onboarded` 로 안내 종료(이것도 네가 제안). 강제 아님 · advisory.\n";
 
 process.stdout.write(JSON.stringify({

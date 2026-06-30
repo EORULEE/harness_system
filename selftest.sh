@@ -77,7 +77,8 @@ if [ "$F" -eq 0 ] && [ "$bad" -eq 0 ]; then
   [ "$REQ_FAIL" -ne 0 ] && echo "   (단, [A] 요구사항 ⚠ 있음 — smoke 는 통과했으나 버전 업그레이드 권장.)"
 else
   echo "⚠ 일부 실패(smoke F=$F · 훅 bad=$bad) — 위 ✗ 확인."
-  [ "$REQ_FAIL" -ne 0 ] && echo "   가장 흔한 원인 = [A] python<3.9 / node<18. 그것부터 맞추고 재실행하세요."
+  echo "   ※ smoke 는 임시폴더 자기완결 — 당신의 글로벌 ~/.claude 설정과 무관합니다(덮어쓰지도 않음)."
+  [ "$REQ_FAIL" -ne 0 ] && echo "   가장 흔한 원인 = [A] python<3.9 / PyYAML 없음 / node<18. 격리 env 로 맞추세요(SETUP.md §0·문제해결)."
 fi
 echo ""
 echo "─────────── 처음이신가요? 이대로만 하면 됩니다 ───────────"
