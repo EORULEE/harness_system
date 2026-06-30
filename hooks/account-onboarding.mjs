@@ -18,12 +18,16 @@ try { if (existsSync(proj + "/.claude/.onboarded")) process.exit(0); } catch {}
 
 const msg =
   "\n[harness onboarding · advisory] 사용자가 이 하네스를 처음 쓰는 것일 수 있음(.claude/.onboarded 없음).\n" +
-  "첫 응답에서 **`SETUP.md` 기준으로 첫 설치 전체를 안내·질문**하라(SETUP.md 가 ACCOUNTS/WIKI 를 묶은 통합 가이드):\n" +
-  " 1) **먼저 `bash selftest.sh`** — 요구사항·코어 smoke(11)·스킬(45)·훅·도구·계정/MCP 상태 한 번에 확인.\n" +
-  " 2) 코어(응답규율·dev-discipline·code-claim·loop·deep-interview·ralph·system-truth-probe·adaptive)는 설정 0으로 바로 작동.\n" +
-  " 3) **선택 통합을 하나씩 안내·질문** — 무엇을 *본인 계정/키로* 설정할지: ⓐ **LLM Wiki**(`export WIKI_ROOT=<노트폴더>`, 결정적 도구는 계정 0 / WIKI.md) ⓑ **Gemini 키**(글쓰기, ACCOUNTS §2) ⓒ **Codex+ChatGPT**(코드 적대검토, §3) ⓓ **연구 MCP**(본인 키로 `bash scripts/setup_mcp.sh` → semantic-scholar·paper-search·github·serena, §4). 없으면 Claude 대체/생략. **이 패키지엔 키가 없음 — 전부 사용자 본인 것을 넣게 안내**.\n" +
+  "첫 응답에서 **`SETUP.md` 기준으로 첫 설치 전체를 적극적으로 진행**하라(단순 언급·문서 떠넘기기 금지 — 네가 먼저 제안하고, 동의하면 직접 실행). SETUP.md 가 ACCOUNTS/WIKI 를 묶은 통합 가이드:\n" +
+  " 1) **먼저 `bash selftest.sh` 를 직접 실행**해 결과(요구사항·코어 smoke 11·스킬 45·훅·도구·계정/MCP 상태)를 보여주고 요약하라.\n" +
+  " 2) 코어(응답규율·dev-discipline·code-claim·loop·deep-interview·ralph·system-truth-probe·adaptive)는 설정 0으로 바로 작동 — 이미 됨을 알린다.\n" +
+  " 3) **선택 통합을 순서대로 적극 제안하고, 각 항목마다 '지금 본인 계정/키로 설정해 드릴까요?' 하고 먼저 물어라**(키는 사용자 본인 것 — 패키지에 키 없음):\n" +
+  "    ⓐ **LLM Wiki**: '노트 폴더를 알려주시면 `export WIKI_ROOT=<폴더>` 로 잡고 결정적 도구를 바로 보여드릴까요?'(계정 0 / WIKI.md)\n" +
+  "    ⓑ **Gemini 키**(글쓰기 백엔드, ACCOUNTS §2): 키 발급처 안내 → 받으면 `~/.claude/gemini.env` 작성까지 도와라.\n" +
+  "    ⓒ **Codex+ChatGPT**(코드 적대검토, §3): 플러그인 설치 + 본인 ChatGPT 인증 절차를 단계별 안내.\n" +
+  "    ⓓ **연구 MCP**(§4): '**지금 본인 계정으로 연구 MCP(semantic-scholar·paper-search·github·serena)를 추가해 드릴까요?**' 하고 먼저 제안 → **동의하면 `bash scripts/setup_mcp.sh` 를 직접 실행**하고 `claude mcp list` 로 `✔ Connected` 확인까지 보여줘라(키 필요한 서버는 본인 것 입력 안내).\n" +
   " ⚠️ 개인정보 보호로 KB(reference manager·notes app)·Drive·Fleet·일부 글쓰기 스킬·MCP 서버는 미포함 — 친구가 자기 것으로 구성(SETUP.md §3).\n" +
-  "설정/결정이 끝나면 `touch .claude/.onboarded` 로 안내 종료. 강제 아님 · advisory.\n";
+  "설정/결정이 끝나면 `touch .claude/.onboarded` 로 안내 종료(이것도 네가 제안). 강제 아님 · advisory.\n";
 
 process.stdout.write(JSON.stringify({
   hookSpecificOutput: { hookEventName: "SessionStart", additionalContext: msg },
