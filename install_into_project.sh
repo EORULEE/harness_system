@@ -42,11 +42,15 @@ echo "  ✓ _output/ (collector·release 마커)"
 cp -n "$SRC/selftest.sh" "$DST/selftest.sh" 2>/dev/null || true
 for doc in SETUP.md ACCOUNTS.md WIKI.md CLAUDE.md; do :; done
 
-# 4) CLAUDE.md — 기존이 있으면 보존(덮어쓰지 않음)
+# 4) CLAUDE.md — 기존 보존 + @import 로 하네스 규율 활성(텍스트는 안 합침)
 if [ -f "$DST/CLAUDE.md" ]; then
-  cp -n "$SRC/CLAUDE.md" "$DST/CLAUDE.harness.md" 2>/dev/null || true
-  echo "  ⚠ 기존 CLAUDE.md 보존 — 하네스 규율은 'CLAUDE.harness.md' 로 넣었습니다."
-  echo "     (원하면 두 파일 내용을 직접 합치세요. 자동 병합은 안 함=당신 규율 보호.)"
+  cp -f "$SRC/CLAUDE.md" "$DST/CLAUDE.harness.md"   # 하네스 규율 본문(재실행 시 최신으로 갱신)
+  if grep -q "@CLAUDE.harness.md" "$DST/CLAUDE.md"; then
+    echo "  • 기존 CLAUDE.md 에 이미 '@CLAUDE.harness.md' import 있음(중복 안 함) · 본문 갱신"
+  else
+    printf '\n<!-- harness 규율 import (이 두 줄만 지우면 하네스 규율 비활성) -->\n@CLAUDE.harness.md\n' >> "$DST/CLAUDE.md"
+    echo "  ✓ 기존 CLAUDE.md 보존 + 끝에 '@CLAUDE.harness.md' import 추가 → 당신 규율 + 하네스 규율 둘 다 활성"
+  fi
 else
   cp "$SRC/CLAUDE.md" "$DST/CLAUDE.md"
   echo "  ✓ CLAUDE.md"
