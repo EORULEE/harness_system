@@ -6,9 +6,28 @@ ROOT="$(cd "$(dirname "$0")" && pwd)"; cd "$ROOT"
 echo "═══════════ harness 공개 코어 자가점검 (selftest) ═══════════"
 
 echo ""
-echo "[A] 요구사항"
-command -v python3 >/dev/null && echo "  ✓ python3 $(python3 --version 2>&1|awk '{print $2}')" || echo "  ✗ python3 없음(필수)"
-command -v node >/dev/null && echo "  ✓ node $(node -v)" || echo "  ⚠ node 없음(훅 비활성; 코어 smoke 는 동작)"
+echo "[A] 요구사항 (python3 ≥3.9 · node ≥18 — SETUP.md §0)"
+REQ_FAIL=0
+if command -v python3 >/dev/null; then
+  PV=$(python3 -c 'import sys;print("%d.%d"%sys.version_info[:2])' 2>/dev/null)
+  if python3 -c 'import sys;exit(0 if sys.version_info[:2]>=(3,9) else 1)' 2>/dev/null; then
+    echo "  ✓ python3 $PV"
+  else
+    echo "  ⚠ python3 $PV < 3.9 — 업그레이드 권장(일부 smoke 실패 가능). 아래 [B] 결과로 실제 확인."; REQ_FAIL=1
+  fi
+else
+  echo "  ✗ python3 없음(필수) — smoke·도구 실행 불가. python 3.9+ 설치 후 재실행."; REQ_FAIL=1
+fi
+if command -v node >/dev/null; then
+  NV=$(node -v 2>/dev/null); NMAJ=$(printf '%s' "$NV" | sed 's/^v//;s/\..*//')
+  if [ "${NMAJ:-0}" -ge 18 ] 2>/dev/null; then
+    echo "  ✓ node $NV"
+  else
+    echo "  ⚠ node $NV < 18 — .mjs 훅 실행 위험. nvm 으로 18+ 권장(코어 smoke 는 동작)."; REQ_FAIL=1
+  fi
+else
+  echo "  ⚠ node 없음 — 훅 비활성(코어 smoke 는 동작). node 18+ 설치 권장."
+fi
 
 echo ""
 echo "[B] 코어 smoke (로직 검증 — 계정 불필요)"
@@ -47,8 +66,10 @@ echo ""
 echo "═══════════ 요약 ═══════════"
 if [ "$F" -eq 0 ] && [ "$bad" -eq 0 ]; then
   echo "✅ 코어 정상 — smoke $P/$((P+F)) · 훅 $ok OK · 스킬 $ns. 바로 사용 가능."
+  [ "$REQ_FAIL" -ne 0 ] && echo "   (단, [A] 요구사항 ⚠ 있음 — smoke 는 통과했으나 버전 업그레이드 권장.)"
 else
-  echo "⚠ 일부 실패(smoke F=$F · 훅 bad=$bad) — 환경 차이일 수 있음. 위 ✗ 확인."
+  echo "⚠ 일부 실패(smoke F=$F · 훅 bad=$bad) — 위 ✗ 확인."
+  [ "$REQ_FAIL" -ne 0 ] && echo "   가장 흔한 원인 = [A] python<3.9 / node<18. 그것부터 맞추고 재실행하세요."
 fi
 echo ""
 echo "─────────── 처음이신가요? 이대로만 하면 됩니다 ───────────"
