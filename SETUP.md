@@ -71,6 +71,19 @@ touch .claude/.onboarded     # 설정/결정 끝나면 → 시작 안내 종료
 
 **요약**: clone → `bash selftest.sh` → (원하는 통합만 3 에서 설정) → `touch .claude/.onboarded`. 코어는 즉시, 나머지는 본인 계정으로.
 
+## 기존 연구 프로젝트에 연동하기 (폴더 안 옮김)
+이미 작업 중인 프로젝트가 있으면, **그 폴더를 옮기지 말고** 하네스를 그 폴더에 얹습니다. 연구 데이터는 그대로:
+```bash
+bash install_into_project.sh /경로/내-연구프로젝트
+# 그다음:  cd /경로/내-연구프로젝트  &&  claude
+```
+이 스크립트가 하는 일:
+- hooks·scripts·tests·.claude/skills·_output(콜렉터) 를 그 폴더에 **추가**(기존 파일 보존, add-only)
+- 그 폴더에 **이미 `CLAUDE.md` 가 있으면 덮지 않고** 하네스본을 `CLAUDE.harness.md` 로 따로 둠(원하면 직접 합치기)
+- **`settings.json` 은 훅을 병합**(기존 훅 보존 + 하네스 훅 추가, 기존은 `.bak` 백업)
+- 끝나면 그 폴더에서 `selftest.sh` 자동 실행해 검증
+- 되돌리기: 추가된 위 폴더들과 `settings.json`(.bak 복원)만 제거. **연구 파일은 처음부터 안 건드림.**
+
 ## 자주 묻는 것 / 문제 해결
 
 **Q. 이미 글로벌 Claude 설정(`~/.claude/CLAUDE.md`·settings·hooks·skills)이 있어요. 충돌하나요?**
