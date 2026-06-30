@@ -6,27 +6,35 @@ ROOT="$(cd "$(dirname "$0")" && pwd)"; cd "$ROOT"
 echo "═══════════ harness 공개 코어 자가점검 (selftest) ═══════════"
 
 echo ""
-echo "[A] 요구사항 (python3 ≥3.9 · node ≥18 — SETUP.md §0)"
+echo "[A] 요구사항 — python3 ≥3.9 + PyYAML · node ≥18"
+echo "    ⓘ 기존 환경(conda/시스템)을 바꾸지 말고 *격리 env* 권장 — SETUP.md §0"
 REQ_FAIL=0
 if command -v python3 >/dev/null; then
   PV=$(python3 -c 'import sys;print("%d.%d"%sys.version_info[:2])' 2>/dev/null)
   if python3 -c 'import sys;exit(0 if sys.version_info[:2]>=(3,9) else 1)' 2>/dev/null; then
     echo "  ✓ python3 $PV"
   else
-    echo "  ⚠ python3 $PV < 3.9 — 업그레이드 권장(일부 smoke 실패 가능). 아래 [B] 결과로 실제 확인."; REQ_FAIL=1
+    echo "  ⚠ python3 $PV < 3.9 — 격리 env 권장: conda create -n harness python=3.12 pyyaml (기존 환경 변경 말 것)"; REQ_FAIL=1
   fi
+  # PyYAML = 유일한 pip 의존(없으면 system_truth_index 등 일부 smoke 실패)
+  if python3 -c 'import yaml' 2>/dev/null; then
+    echo "  ✓ PyYAML"
+  else
+    echo "  ⚠ PyYAML 없음 — 격리 env 에 'pip install pyyaml'(또는 conda install pyyaml). 코어 일부 smoke 가 이걸 씀."; REQ_FAIL=1
+  fi
+  echo "    (격리 env 사용 시: export PYTHON=\$(which python3) 로 훅이 그 python 을 쓰게 고정 — SETUP.md §0)"
 else
-  echo "  ✗ python3 없음(필수) — smoke·도구 실행 불가. python 3.9+ 설치 후 재실행."; REQ_FAIL=1
+  echo "  ✗ python3 없음(필수) — 격리 env 에 설치: conda create -n harness python=3.12 pyyaml"; REQ_FAIL=1
 fi
 if command -v node >/dev/null; then
   NV=$(node -v 2>/dev/null); NMAJ=$(printf '%s' "$NV" | sed 's/^v//;s/\..*//')
   if [ "${NMAJ:-0}" -ge 18 ] 2>/dev/null; then
     echo "  ✓ node $NV"
   else
-    echo "  ⚠ node $NV < 18 — .mjs 훅 실행 위험. nvm 으로 18+ 권장(코어 smoke 는 동작)."; REQ_FAIL=1
+    echo "  ⚠ node $NV < 18 — 시스템 node 교체 말고 nvm 으로 격리: nvm install 18 (코어 smoke 는 동작)."; REQ_FAIL=1
   fi
 else
-  echo "  ⚠ node 없음 — 훅 비활성(코어 smoke 는 동작). node 18+ 설치 권장."
+  echo "  ⚠ node 없음 — 훅 비활성(코어 smoke 는 동작). nvm install 18 권장(시스템 변경 없이)."
 fi
 
 echo ""

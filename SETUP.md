@@ -4,8 +4,26 @@
 
 > Claude Code 첫 세션을 열면 이 순서를 **자동으로 안내·질문**합니다(온보딩). 직접 보려면 이 문서.
 
-## 0. 요구사항
-- **Claude Code**(호스트) · **python3 3.9+** · **node 18+**
+## 0. 요구사항 — 기존 환경을 바꾸지 마세요 (격리 env 권장)
+- **Claude Code**(호스트) · **python3 ≥3.9 + PyYAML** · **node ≥18**
+- 외부 pip 의존은 **PyYAML 하나뿐**(나머지는 전부 표준 라이브러리). 시스템 python/node 를 *업그레이드·교체하지 말고* 격리 환경을 쓰세요 — 당신이 이미 쓰던 conda·프로젝트 환경이 망가지지 않습니다.
+
+**옵션 A — conda (이미 쓰고 있다면 권장)**
+```bash
+conda create -n harness python=3.12 pyyaml -y
+export PYTHON="$(conda run -n harness which python)"   # 훅이 이 python 을 쓰도록 고정
+```
+**옵션 B — venv (conda 없을 때)**
+```bash
+python3 -m venv ~/.harness-venv && ~/.harness-venv/bin/pip install pyyaml
+export PYTHON="$HOME/.harness-venv/bin/python3"
+```
+**node — 시스템 교체 말고 nvm**
+```bash
+nvm install 18          # 또는 그 이상. 시스템 node 는 그대로 둠.
+```
+> 훅은 `PYTHON` 환경변수를 1순위로 따릅니다(없으면 시스템 python3). `export PYTHON=...` 를 셸 프로필(`~/.bashrc` 등)에 넣어두면 매번 적용됩니다. node 는 nvm 으로 격리하면 시스템에 무영향.
+> 빠른 확인: `bash selftest.sh` 의 `[A]` 가 python·PyYAML·node 를 각각 ✓/⚠ 로 알려줍니다.
 
 ## 1. 받기 & 설치 확인 (필수)
 ```bash
