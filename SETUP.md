@@ -28,7 +28,11 @@ Google AI Studio 키 → `~/.claude/gemini.env` 에 `GEMINI_API_KEY=...` (없으
 ### 3c. Codex + ChatGPT (코드 적대검토) — `ACCOUNTS.md §3`
 Codex Claude Code 플러그인 설치 + ChatGPT 인증 (없으면 Claude 리뷰로 대체).
 ### 3d. 연구·코드 MCP — `ACCOUNTS.md §4`
-Claude Code MCP 로 `semantic-scholar`·`paper-search`·`github`·`serena` 추가(일부 키 필요; 생략 가능).
+**본인 계정/키로** `semantic-scholar`·`paper-search`·`github`·`serena` 추가(일부 키 필요; 생략 가능).
+```bash
+bash scripts/setup_mcp.sh      # 본인 키로 자동 등록(이미 있으면 skip). 키는 저장 안 함.
+claude mcp list                # 각 서버 '✔ Connected' 확인
+```
 
 ## 4. 마무리
 ```bash

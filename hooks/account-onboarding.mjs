@@ -21,7 +21,7 @@ const msg =
   "첫 응답에서 **`SETUP.md` 기준으로 첫 설치 전체를 안내·질문**하라(SETUP.md 가 ACCOUNTS/WIKI 를 묶은 통합 가이드):\n" +
   " 1) **먼저 `bash selftest.sh`** — 요구사항·코어 smoke(11)·스킬(45)·훅·도구·계정/MCP 상태 한 번에 확인.\n" +
   " 2) 코어(응답규율·dev-discipline·code-claim·loop·deep-interview·ralph·system-truth-probe·adaptive)는 설정 0으로 바로 작동.\n" +
-  " 3) **선택 통합을 하나씩 안내·질문** — 무엇을 설정할지: ⓐ **LLM Wiki**(`export WIKI_ROOT=<노트폴더>`, 결정적 도구는 계정 0 / WIKI.md) ⓑ **Gemini 키**(글쓰기, ACCOUNTS §2) ⓒ **Codex+ChatGPT**(코드 적대검토, §3) ⓓ **연구 MCP**(semantic-scholar·serena 등, §4). 없으면 Claude 대체/생략.\n" +
+  " 3) **선택 통합을 하나씩 안내·질문** — 무엇을 *본인 계정/키로* 설정할지: ⓐ **LLM Wiki**(`export WIKI_ROOT=<노트폴더>`, 결정적 도구는 계정 0 / WIKI.md) ⓑ **Gemini 키**(글쓰기, ACCOUNTS §2) ⓒ **Codex+ChatGPT**(코드 적대검토, §3) ⓓ **연구 MCP**(본인 키로 `bash scripts/setup_mcp.sh` → semantic-scholar·paper-search·github·serena, §4). 없으면 Claude 대체/생략. **이 패키지엔 키가 없음 — 전부 사용자 본인 것을 넣게 안내**.\n" +
   " ⚠️ 개인정보 보호로 KB(reference manager·notes app)·Drive·Fleet·일부 글쓰기 스킬·MCP 서버는 미포함 — 친구가 자기 것으로 구성(SETUP.md §3).\n" +
   "설정/결정이 끝나면 `touch .claude/.onboarded` 로 안내 종료. 강제 아님 · advisory.\n";
 
