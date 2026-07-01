@@ -17,6 +17,11 @@
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/hooks/system-question-advisory.mjs\"",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/hooks/mode-label-advisory.mjs\"",
+            "timeout": 3
           }
         ]
       }
