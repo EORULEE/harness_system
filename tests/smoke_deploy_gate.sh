@@ -9,8 +9,8 @@ FX="$ROOT/tests/fixtures/fleet-agent-pair"
 . "$ROOT/tests/lib/volatile_fixtures.sh"; regen_volatile_fixtures "$FX"
 # r13: hermetic 배포-인프라 fixture — central(fleet-dashboard 정합)·rollback(archive 개방) 검사를 실제 인프라 존재여부와 분리(T7/T13). pristine clone 에서도 게이트 로직 검증(--infra-root).
 INFRA="$(mktemp -d)"; trap 'rm -rf "$INFRA"' EXIT
-mkdir -p "$INFRA/_output/fleet-dashboard" "$INFRA/_output/release/current" "$INFRA/_output/release/archive/seed"
-for x in fleet_summary.py fleet_aggregate.py render.py fleet-registry.json; do : > "$INFRA/_output/fleet-dashboard/$x"; done
+mkdir -p "$INFRA/fleet-dashboard" "$INFRA/_output/release/current" "$INFRA/_output/release/archive/seed"
+for x in fleet_summary.py fleet_aggregate.py render.py fleet-registry.json; do : > "$INFRA/fleet-dashboard/$x"; done
 P=0; F=0; ok(){ echo "  ✓ $1"; P=$((P+1)); }; no(){ echo "  ✗ $1"; F=$((F+1)); }
 g(){ python3 "$GATE" "$@" 2>/dev/null; }
 jq_field(){ python3 -c 'import sys,json;d=json.load(sys.stdin);exec("v=d"+sys.argv[1]);print(v)' "$1"; }

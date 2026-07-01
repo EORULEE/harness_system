@@ -5,7 +5,7 @@
   Agent/Pair 미생성 · formal loop ledger 누락 · Dashboard 파싱 오류 · runtime 불일치 ·
   static-pass 과장 · account-bound 과장 · rollback 미검증.
 
-재사용: _output/fleet-dashboard/fleet_summary.py(collector — agent/pair/ledger 판정). 재구현 0.
+재사용: fleet-dashboard/fleet_summary.py(collector — agent/pair/ledger 판정). 재구현 0.
 
 사용:
   python3 scripts/deploy_gate.py preflight  --project <path> [--project ...] [--release <id>] [signals...]
@@ -23,7 +23,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-COLLECTOR = ROOT / "_output" / "fleet-dashboard" / "fleet_summary.py"
+COLLECTOR = ROOT / "fleet-dashboard" / "fleet_summary.py"
 sys.path.insert(0, str(COLLECTOR.parent))
 try:
     import fleet_summary as FS  # 재사용: agent/pair/ledger 판정(G8~G10)
@@ -170,7 +170,7 @@ def gate_runtime(level: str) -> dict:
 # ── Gate 6: Central integration ──
 def gate_central(projs: list, fd_root: Path = ROOT) -> dict:
     f = []
-    fd = fd_root / "_output" / "fleet-dashboard"
+    fd = fd_root / "fleet-dashboard"
     consistent = all((fd / x).is_file() for x in ("fleet_summary.py", "fleet_aggregate.py", "render.py", "fleet-registry.json"))
     if not consistent:
         f.append({"severity": "HIGH", "msg": "Fleet collector/aggregator/renderer/registry 정합 깨짐"})

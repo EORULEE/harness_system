@@ -3,7 +3,7 @@
 # ledger_evidence.scan_ledger_evidence 가 5 실변종을 올바르게 분류하는지 + strict rule + name collision.
 set -u
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-LE="$ROOT/_output/fleet-dashboard/ledger_evidence.py"
+LE="$ROOT/fleet-dashboard/ledger_evidence.py"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 PASS=0; FAIL=0

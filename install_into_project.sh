@@ -33,10 +33,11 @@ mkdir -p "$DST/.claude/skills"
 cp -rn "$SRC/.claude/skills/." "$DST/.claude/skills/" 2>/dev/null || true
 echo "  ✓ .claude/skills/ (45)"
 
-# 2b) _output/ (fleet-dashboard 콜렉터 + release 마커 — 일부 smoke 가 참조). add-only.
-mkdir -p "$DST/_output"
+# 2b) fleet-dashboard/ (콜렉터 코드) + _output/ (release 마커·런타임 ledger 출력 — 일부 smoke 가 참조). add-only.
+mkdir -p "$DST/fleet-dashboard" "$DST/_output"
+cp -rn "$SRC/fleet-dashboard/." "$DST/fleet-dashboard/" 2>/dev/null || true
 cp -rn "$SRC/_output/." "$DST/_output/" 2>/dev/null || true
-echo "  ✓ _output/ (collector·release 마커)"
+echo "  ✓ fleet-dashboard/ (collector) + _output/ (release 마커)"
 
 # 3) selftest 도 넣어 그 프로젝트에서 검증 가능하게
 cp -n "$SRC/selftest.sh" "$DST/selftest.sh" 2>/dev/null || true

@@ -4,10 +4,18 @@
 
 ## 처음 설치 — **`SETUP.md` 먼저** (전체 설정 안내)
 ```bash
-git clone harness-public-core-v1.bundle harness && cd harness
+# GitHub 에서
+git clone https://github.com/EORULEE/harness_system.git harness && cd harness
+# 또는 배포된 번들 파일에서
+#   git clone harness-public-core-v1.bundle harness && cd harness
 bash selftest.sh      # 요구사항·smoke(11)·스킬(45)·훅·도구·계정/MCP 상태 한 번에
 ```
 Claude Code 첫 세션을 열면 온보딩이 **SETUP.md 기준 전체 설정(코어·Wiki·계정·MCP)을 안내·질문**합니다.
+
+### 폴더 구조 (한눈에)
+- `CLAUDE.md` 규율 · `.claude/` (settings·skills·hookify 규칙) · `hooks/` · `scripts/` · `tests/` (smoke)
+- `fleet-dashboard/` — **콜렉터 코드**(fleet_summary·ledger_evidence). 지우지 말 것.
+- `_output/` — **런타임 출력**(loop ledger `_output/loops·contracts·ralph`, release 마커). 실행 중 생성됨.
 
 - **처음 설치 전체: `SETUP.md`** · 규율: `CLAUDE.md` · 검증: `SMOKE_SUITE.md` · 계정: `ACCOUNTS.md` · LLM 위키: `WIKI.md` · 설치 상세: `INSTALL.md`
 - **포함**: 45 스킬(dev-discipline·code-claim 게이트·loop·deep-interview·ralph·writing·adaptive·**LLM Wiki** 등) + 13 훅 + 11 smoke. 코어는 계정 0으로 작동.
