@@ -26,7 +26,7 @@ from pathlib import Path
 
 # File path 패턴 — 일반적 형식
 # - 상대: scripts/foo.py, .claude/agents/c-lead.md
-# - 절대 (Linux): <PATH>/..., /home/user/...
+# - 절대 (Linux): /mnt/e/..., /home/user/...
 # - 절대 (Windows): D:\..., C:/..., D:/...
 FILE_PATTERNS = [
     # backtick 안 path: `scripts/foo.py`
@@ -73,7 +73,7 @@ def normalize_path(path: str, cwd: Path) -> Path | None:
     if not p:
         return None
 
-    # Windows path → WSL path 변환 (D:\foo → <PATH>/foo)
+    # Windows path → WSL path 변환 (D:\foo → /mnt/d/foo)
     win_match = re.match(r"^([A-Za-z]):[\\/](.*)", p)
     if win_match:
         drive = win_match.group(1).lower()

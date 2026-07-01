@@ -143,7 +143,7 @@ def pyhwpx_replace(in_file: str, out_file: str, find: str, repl: str) -> tuple[b
                 return (False,
                         f"[경로 오류] WSL에서 한컴 편집은 {label} 파일이 Windows 드라이브(/mnt/c, /mnt/d)에 "
                         f"있어야 합니다. 현재: {pth} (WSL-네이티브 경로는 한컴이 읽다 손상). "
-                        "파일을 <PATH>/... 등으로 옮겨 다시 시도하세요.")
+                        "파일을 /mnt/d/... 등으로 옮겨 다시 시도하세요.")
 
     script_arg = to_win_path(str(script)) if is_wsl() else str(script)
     in_arg = to_win_path(in_file) if is_wsl() else in_file

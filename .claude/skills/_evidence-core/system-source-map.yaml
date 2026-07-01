@@ -1,7 +1,7 @@
 # system-source-map.yaml — 사실도메인 → 원천파일 + collector + risk
 # Evidence Index v1. 이 맵이 indexer를 구동한다(도메인 추가=여기만 편집).
 # risk: index_ok(존재/메타는 index로 답 OK) · must_read(로직/정확값은 항상 파일 read) · presence_only(stat만, 내용 X)
-harness: "<project> v6"
+harness: "files_origin v6"
 
 domains:
   skills:
@@ -88,7 +88,7 @@ domains:
     answers: ["Mode C cycle.*.yaml 존재 여부(없으면 Mode C 비활성)"]
 
   env_secrets:
-    files: ["~/.claude/gemini.env", "~/.claude/gemini-free.env", "~/.claude/kb.env", ".claude/kb.env"]
+    files: ["~/.claude/gemini.env", "~/.claude/gemini-free.env", "~/.claude/zotero.env", ".claude/kb.env"]
     collector: presence_only
     risk: presence_only
     answers: ["secret/env 파일 존재 여부(내용 X)"]

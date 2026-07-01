@@ -1,18 +1,18 @@
 ---
 name: harness-project-bootstrap
-description: "새 프로젝트의 표준 구조(README·PROJECT.yaml·Data/Code/Experiments/Report/Wiki/_claude)를 결정적으로 생성. 같은 입력→동일 구조(Linux/WSL/Windows), 2회 실행은 덮어쓰기·중복 없음(idempotent). 기본 dry-run, --apply 는 사용자 승인 후. 기존 프로젝트 migration 미사용. '새 프로젝트 만들어' 시 명시 호출."
+description: "LEEER 새 프로젝트의 표준 구조(README·PROJECT.yaml·Data/Code/Experiments/Report/Wiki/_claude)를 결정적으로 생성. 같은 입력→동일 구조(Linux/WSL/Windows), 2회 실행은 덮어쓰기·중복 없음(idempotent). 기본 dry-run, --apply 는 사용자 승인 후. 기존 프로젝트 migration 미사용. '새 LEEER 프로젝트 만들어' 시 명시 호출."
 disable-model-invocation: true
 allowed-tools: [Bash, Read]
-argument-hint: "--project-id <id> --title <t> --root <dir> [--machine-profile <machine>] [--owner <o>]"
+argument-hint: "--project-id <id> --title <t> --root <dir> [--machine-profile euru] [--owner <o>]"
 ---
 
-# harness-project-bootstrap — 프로젝트 결정적 생성 (명시 호출 전용)
+# harness-project-bootstrap — LEEER 프로젝트 결정적 생성 (명시 호출 전용)
 
 > 새 프로젝트 **구조만** 결정적으로 생성. 구조 SoT = `docs/leeer-storage-design.md §2` + `leeer-llm-wiki-guide.md §8` + `leeer-experiment-registry-design.md §6` + `_templates/`. 새 폴더 체계 임의 생성 금지.
 > 엔진 = `scripts/leeer_project_bootstrap.py`. 검증 = `tests/smoke_leeer_project_bootstrap.sh`(10 assert). 최종권위 = stop-guard·hookify.
 
 ## 언제
-- **새 프로젝트 1개** 표준 골격 생성. (기존 프로젝트 **migration·재구성에는 사용 안 함** — 그건 별도 마이그레이션 + 사람 승인.)
+- **새 LEEER 프로젝트 1개** 표준 골격 생성. (기존 프로젝트 **migration·재구성에는 사용 안 함** — 그건 storage-audit + 사람 승인.)
 
 ## 절차 (반자동 — 승인 게이트)
 1. **먼저 dry-run**(기본): `python3 scripts/leeer_project_bootstrap.py --project-id <id> --title "<t>" --root <dir> [--machine-profile <p>] [--owner <o>]`

@@ -3,7 +3,7 @@
 hwp_edit_pyhwpx.py — 한컴오피스 COM 자동화로 .hwp 충실도 유지 편집
 
 ⚠️ Windows 전용 + 한컴오피스(아래아한글) 설치 필수.
-   Linux 서버(<machine>*)에서는 실행 불가 — 사용자 본인 Windows PC에서 실행.
+   Linux 서버(gars*)에서는 실행 불가 — 사용자 본인 Windows PC에서 실행.
 
 rhwp(Node 브리지)는 읽기 전용으로만 신뢰. 그림·표가 있는 실제 문서를
 편집하려면 본 스크립트(pyhwpx)를 Windows에서 사용 — 한컴 엔진이 직접

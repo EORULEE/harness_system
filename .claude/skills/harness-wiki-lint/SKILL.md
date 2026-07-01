@@ -2,7 +2,7 @@
 name: harness-wiki-lint
 description: "vault/wiki 콘텐츠 품질검사(의미). orphan·broken link·모순·stale·누락 entity·data gap 탐지. 결정적 부분(broken/orphan)은 Grep, 의미 판정(모순·gap)은 2-pass(c-/x-). health(구조) 통과 후 주기적 실행. 에이전트 모드. 명시 호출 전용."
 disable-model-invocation: true
-allowed-tools: [Read, Grep, Glob, Write, Task]
+allowed-tools: [Read, Grep, Glob, Write, Task, mcp__zotero__zotero_search_items]
 ---
 
 # harness-wiki-lint — 위키 품질검사 (에이전트 모드)
@@ -20,7 +20,7 @@ allowed-tools: [Read, Grep, Glob, Write, Task]
   - stale — 새 소스 이후 갱신 안 된 페이지
   - 누락 entity — 3+ 페이지서 언급되나 자체 페이지 없는 엔티티
   - data gap — 위키가 답 못하는 질문(→ 새 소스 제안)
-- **인용 재검증**(선택): citekey를 ``로 재대조(실재성).
+- **인용 재검증**(선택): citekey를 `mcp__zotero__zotero_search_items`로 재대조(실재성).
 
 ## 절차
 1. health 먼저 통과 확인

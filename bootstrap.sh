@@ -1,9 +1,43 @@
 #!/usr/bin/env bash
-# bootstrap — 요구사항 점검 + 검증 smoke 실행
-set -uo pipefail
-ROOT="$(cd "$(dirname "$0")" && pwd)"; cd "$ROOT"
-echo "== 요구사항 =="; command -v python3 >/dev/null && echo "  python3: $(python3 --version 2>&1)" || { echo "  python3 없음"; exit 1; }
-command -v node >/dev/null && echo "  node: $(node -v)" || echo "  node 없음(훅 비활성; core smoke 는 동작)"
-echo "== 검증 smoke =="; P=0;F=0
-for s in tests/smoke_*.sh; do bash "$s" >/dev/null 2>&1 && { echo "  PASS $(basename "$s" .sh)"; P=$((P+1)); } || { echo "  FAIL $(basename "$s" .sh)"; F=$((F+1)); }; done
-echo "== 결과: PASS=$P FAIL=$F =="; [ $F -eq 0 ] && echo "OK — 시스템 동작 확인" || echo "일부 실패(환경 차이 가능)"
+# bootstrap.sh — Linux/Mac 1줄 부트스트랩
+#
+# 사용:
+#   unzip claude-harness-2026-05-08.zip -d ~/
+#   bash ~/files_origin/bootstrap.sh
+
+set -eu
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+echo ""
+echo "===================================================="
+echo "  Claude Harness Bootstrap (Linux/Mac)"
+echo "  Source: $SCRIPT_DIR"
+echo "===================================================="
+echo ""
+
+echo "[1/3] 환경 셋업..."
+bash "$SCRIPT_DIR/harness-v2.7/setup_wsl.sh"
+
+echo ""
+echo "[2/3] Global memory 복원..."
+bash "$SCRIPT_DIR/global_memory/restore.sh"
+
+echo ""
+echo "[3/3] 글로벌 CLAUDE.md 복사..."
+mkdir -p ~/.claude
+cp "$SCRIPT_DIR/user-config/global-CLAUDE.md" ~/.claude/CLAUDE.md
+echo "  ✅ ~/.claude/CLAUDE.md 복사 완료"
+
+echo ""
+echo "===================================================="
+echo "✅ 부트스트랩 완료"
+echo "===================================================="
+echo ""
+echo "다음 단계:"
+echo "  source ~/.bashrc"
+echo "  claude /login"
+echo "  claude-team"
+echo ""
+echo "프로젝트별 셋업:"
+echo "  bash $SCRIPT_DIR/harness-v2.7/setup_full.sh \"\$(pwd)\""

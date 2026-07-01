@@ -31,7 +31,7 @@ m.INFERRED_EDGES_FILE = GRAPHDIR / ".inferred_edges.jsonl"
 m.LOG_FILE = WIKI / "log.md"
 m.SCHEMA_FILE = ROOT / ".claude/skills/_wiki-core/wiki-rules.md"
 
-# [의도적 일탈 #3 — VENDOR.md] 위키링크 경로/별칭/앵커 위키링크 해석 보강.
+# [의도적 일탈 #3 — VENDOR.md] Obsidian 경로/별칭/앵커 위키링크 해석 보강.
 # 벤더 build_extracted_edges는 bare [[stem]]만 매칭 → [[path/file|alias#anchor]] 미해석.
 # 벤더 파일은 불변 유지하고 함수만 monkeypatch(byte-exact 원본 보존).
 def _enhanced_extracted_edges(pages):

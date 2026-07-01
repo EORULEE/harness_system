@@ -20,7 +20,7 @@
 **skill 없이 실패를 먼저 확인하지 않았으면 skill 생성 HOLD** — RED를 건너뛴 skill은 미검증으로 간주, 배포 보류.
 
 ## 하네스 정합
-- 본 Suite·Writing Suite·Wiki/실험 skill 작성 시 이 규율을 권장(advisory). [[reference-harness-install-procedure]]의 vendored 스킬 절차와 정합.
+- 본 Suite·Writing Suite·LEEER skill 작성 시 이 규율을 권장(advisory). [[reference-harness-install-procedure]]의 vendored 스킬 절차와 정합.
 - static smoke = `tests/superpowers-patterns/smoke.sh`(frontmatter·dmi·secret).
 ## 경계
 advisory. 호출 = `harness-skill-tdd`(명시). 최종권위 stop-guard/hookify.

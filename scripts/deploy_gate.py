@@ -85,7 +85,7 @@ def gate_materialization(proj: Path, obs: dict) -> dict:
         "wired": (proj / ".claude" / "settings.local.json").is_file() or (proj / ".claude" / "settings.json").is_file(),
         "static-verified": pt.get("status") == "configured" and pt.get("pair_count", 0) > 0,
         "live-verified": pt.get("live_pass_count", 0) > 0,
-        "centrally-recorded": True,  # registry/SESSION_HISTORY 는 <machine> 중앙 — 별도 확인
+        "centrally-recorded": True,  # registry/SESSION_HISTORY 는 euru 중앙 — 별도 확인
     }
     # 금지 등식: declared≠deployed, deployed≠wired, static-pass≠ACTIVE
     if stages["declared"] and not stages["deployed"]:
@@ -174,8 +174,8 @@ def gate_central(projs: list, fd_root: Path = ROOT) -> dict:
     consistent = all((fd / x).is_file() for x in ("fleet_summary.py", "fleet_aggregate.py", "render.py", "fleet-registry.json"))
     if not consistent:
         f.append({"severity": "HIGH", "msg": "Fleet collector/aggregator/renderer/registry 정합 깨짐"})
-    # vault commit parity / kb / design 은 account-bound·external — 상태 분리(과장 차단)
-    sep = {"registered != authenticated": "kb/MCP registered 가 authenticated 아님(account-bound)",
+    # vault commit parity / zotero / design 은 account-bound·external — 상태 분리(과장 차단)
+    sep = {"registered != authenticated": "Zotero/MCP registered 가 authenticated 아님(account-bound)",
            "uploaded != Published": "Claude Design uploaded 가 Published 아님(비공개 유지)"}
     return {"gate": "central_integration", "collector_consistent": consistent,
             "state_separation": sep, "findings": f, "result": _verdict(f)}
@@ -197,7 +197,7 @@ def gate_rollback_security(release_dir: Path, settings_root: Path = ROOT) -> dic
             f.append({"severity": "MEDIUM", "msg": f"settings 백업 유효 JSON 아님: {bak.name}"})
     # secret residual (release pkg + collector 출력)
     sec = 0
-    pat = re.compile(r"ghp_[A-Za-z0-9]{20}|sk-[A-Za-z0-9]{20}|AKIA[0-9A-Z]{16}|EXAMPLE_API_KEY=[A-Za-z0-9]")
+    pat = re.compile(r"ghp_[A-Za-z0-9]{20}|sk-[A-Za-z0-9]{20}|AKIA[0-9A-Z]{16}|ZOTERO_API_KEY=[A-Za-z0-9]")
     for p in release_dir.glob("*"):
         if p.is_file():
             try:

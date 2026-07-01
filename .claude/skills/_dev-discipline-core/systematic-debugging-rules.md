@@ -23,7 +23,7 @@
 ## 하네스 도메인 적용
 - **Lottie 렌더 빈 캔버스**(항목100): P1 headless 재현+seek-draw 의심 → P2 정상 프레임 비교 → P3 virtual-time 레이스 단일가설 → P4 playwright 프레임대기 fix + **재Read 시각검증**([[feedback-figure-read-verify]]).
 - **HWP 한컴 hang**([[feedback-hancom-interop-caution]]): 증상(taskkill 반복) 아닌 **근본(COM 서버 오염)** 차단. 1건씩·timeout 180s+.
-- **serve_html cold-path timeout**: 재현 → <vpn> ping warm으로 격리 → 경로 vs 콘텐츠 切り分け.
+- **serve_html cold-path timeout**: 재현 → tailscale ping warm으로 격리 → 경로 vs 콘텐츠 切り分け.
 - **DOCX/browser**: 동일 4-phase. "추측·fix 묶기·테스트 생략·미검증 가정" = red flag(재시작).
 
 ## 경계

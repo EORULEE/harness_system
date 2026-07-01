@@ -21,7 +21,7 @@
 2. **경로 비침습 재지정**: 벤더 원본은 `REPO_ROOT=__file__.parent.parent` 기준 `wiki/`·`graph/`를 가정. 원본을 고치지 않고 **wrapper가 모듈 상수를 monkeypatch**해 `vault/wiki/`·`vault/wiki/graph/`로 돌린다(`harness-wiki-{health,graph}/run_*.py`).
 3. **미벤더링(의도)**: `ingest.py`·`lint.py`·`query.py`(litellm 의존 LLM 경로)·`file_to_md.py`·`pdf2md.py`(markitdown/별도 변환)·`heal.py`·`refresh.py`. 이들의 **워크플로 로직은 SKILL.md로 포팅**(에이전트 모드), 실행 바이너리로는 안 가져온다.
 4. **루트 `CLAUDE.md`/`GEMINI.md`/`AGENTS.md` 미설치**: ambient 지시 파일 금지(하네스 hard rule). 스키마는 `page-schema.yaml`+`wiki-rules.md`로 변환.
-5. **wikilink 해석 보강(함수 monkeypatch)**: 벤더 `build_extracted_edges`는 bare `[[stem]]`만 매칭 → 위키링크 `[[path/file|alias#anchor]]` 미해석. `harness-wiki-graph/run_graph.py`가 **벤더 파일 불변** 유지하고 해당 함수만 런타임 교체(경로/별칭/앵커 strip 후 stem·page_id 양쪽 해석). 1→41 엣지.
+5. **wikilink 해석 보강(함수 monkeypatch)**: 벤더 `build_extracted_edges`는 bare `[[stem]]`만 매칭 → Obsidian `[[path/file|alias#anchor]]` 미해석. `harness-wiki-graph/run_graph.py`가 **벤더 파일 불변** 유지하고 해당 함수만 런타임 교체(경로/별칭/앵커 strip 후 stem·page_id 양쪽 해석). 1→41 엣지.
 6. **graph.html self-contained**: 벤더 `render_html`은 `unpkg.com/vis-network` CDN `<script src>`를 박아넣음. wrapper가 빌드 후 그 태그를 **벤더 vis-network.min.js 인라인 `<script>`로 치환**(외부요청 0, 하네스 HTML 규율). 벤더 build_graph.py는 불변.
 
 ## 업스트림 갱신 절차

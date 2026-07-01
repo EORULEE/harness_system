@@ -26,7 +26,7 @@ from pathlib import Path
 
 def read_kb_env(proj: Path) -> dict:
     """프로젝트 .claude/kb.env 파싱 (값 그대로, secret 아님 — vault경로·collection키만)."""
-    out = {"vault_dir": None, "kb_collection": None, "domains": None}
+    out = {"vault_dir": None, "zotero_collection": None, "domains": None}
     kb = proj / ".claude" / "kb.env"
     if not kb.is_file():
         return out
@@ -39,8 +39,8 @@ def read_kb_env(proj: Path) -> dict:
             k, v = k.strip(), v.strip().strip('"').strip("'")
             if k == "KB_VAULT_DIR":
                 out["vault_dir"] = v
-            elif k == "KB_COLLECTION":
-                out["kb_collection"] = v or None
+            elif k == "KB_ZOTERO_COLLECTION":
+                out["zotero_collection"] = v or None
             elif k == "KB_DOMAINS":
                 out["domains"] = v or None
     except Exception:
@@ -956,7 +956,7 @@ def _find_claude() -> str | None:
 
 def mcp_connected_set(claude: str | None, cwd: str | None = None, timeout: int = 20) -> list | None:
     """`claude mcp list`(cwd 기준 스코프) 파싱 → ✔ Connected 서버명. 실패 시 None(graceful).
-    cwd를 프로젝트 경로로 주면 그 프로젝트-스코프 MCP(kb/design 등)까지 포함된다."""
+    cwd를 프로젝트 경로로 주면 그 프로젝트-스코프 MCP(zotero/design 등)까지 포함된다."""
     if not claude:
         return None
     try:
@@ -983,11 +983,11 @@ def collect_project(proj_path: str, home: Path, claude_json: dict,
         "knowledge_io": {
             "vault": None,            # {path,total_md,by_cat,last_modified}
             "wiki": None,             # {notes,size_kb,subdirs,last_modified}
-            "kb": None,           # {collection, items}  ← items는 집계기가 채움
+            "zotero": None,           # {collection, items}  ← items는 집계기가 채움
             "claude_design": False,
         },
-        "mcp": {"kb": False, "design": False, "serena": False},
-        "mcp_connected": {"kb": None, "design": None, "serena": None},
+        "mcp": {"zotero": False, "design": False, "serena": False},
+        "mcp_connected": {"zotero": None, "design": None, "serena": None},
         "harness": None,
         "sessions": None,
     }
@@ -1002,7 +1002,7 @@ def collect_project(proj_path: str, home: Path, claude_json: dict,
         entry["agent_pair_error"] = str(e)[:200]
 
     kb = read_kb_env(proj)
-    # notes-app vault: kb.env의 KB_VAULT_DIR 우선, 없으면 <proj>/vault
+    # Obsidian vault: kb.env의 KB_VAULT_DIR 우선, 없으면 <proj>/vault
     vault_dir = None
     if kb["vault_dir"] and Path(kb["vault_dir"]).is_dir():
         vault_dir = kb["vault_dir"]
@@ -1014,22 +1014,22 @@ def collect_project(proj_path: str, home: Path, claude_json: dict,
         if wm is not None:
             wm["contradictions"] = contradictions_count(vault_dir)
         entry["knowledge_io"]["wiki"] = wm
-    if kb["kb_collection"]:
-        entry["knowledge_io"]["kb"] = {"collection": kb["kb_collection"], "items": None}
+    if kb["zotero_collection"]:
+        entry["knowledge_io"]["zotero"] = {"collection": kb["zotero_collection"], "items": None}
 
     # MCP (프로젝트 스코프 설정 키)
     mcp_keys = project_scoped_mcp(claude_json, proj_path)
-    entry["mcp"]["kb"] = "kb" in mcp_keys
+    entry["mcp"]["zotero"] = "zotero" in mcp_keys
     entry["mcp"]["design"] = any("design" in k for k in mcp_keys)
     entry["mcp"]["serena"] = "serena" in mcp_keys
     entry["knowledge_io"]["claude_design"] = entry["mcp"]["design"]
 
-    # 연결 검증: kb/design이 프로젝트-스코프로 설정된 경우만 그 cwd에서 mcp list 호출(비용 최소)
-    if verify_mcp and claude_bin and (entry["mcp"]["kb"] or entry["mcp"]["design"]):
+    # 연결 검증: zotero/design이 프로젝트-스코프로 설정된 경우만 그 cwd에서 mcp list 호출(비용 최소)
+    if verify_mcp and claude_bin and (entry["mcp"]["zotero"] or entry["mcp"]["design"]):
         conn = mcp_connected_set(claude_bin, cwd=proj_path)
         if conn is not None:
             cs = set(conn)
-            entry["mcp_connected"]["kb"] = ("kb" in cs) if entry["mcp"]["kb"] else None
+            entry["mcp_connected"]["zotero"] = ("zotero" in cs) if entry["mcp"]["zotero"] else None
             entry["mcp_connected"]["design"] = (any("design" in c for c in cs)) if entry["mcp"]["design"] else None
             entry["mcp_connected"]["serena"] = ("serena" in cs) if entry["mcp"]["serena"] else None
 

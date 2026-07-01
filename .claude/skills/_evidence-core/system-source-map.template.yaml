@@ -35,7 +35,7 @@ domains:
     collector: glob_exists
     risk: index_ok
   env_secrets:
-    files: ["~/.claude/gemini.env", "~/.claude/gemini-free.env", "~/.claude/kb.env", ".claude/kb.env"]
+    files: ["~/.claude/gemini.env", "~/.claude/gemini-free.env", "~/.claude/zotero.env", ".claude/kb.env"]
     collector: presence_only
     risk: presence_only
     note: "stat만 — 내용 안 읽음(secret)"

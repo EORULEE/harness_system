@@ -26,7 +26,7 @@ python3 scripts/code_claim_lint.py <draft.md|->        # flagged 있으면 exit 
 heuristic 보조기(완전 탐지 아님) — flag 0 이 "검증 완료" 보증은 아니다. **flag 가 있으면 반드시 처리**, 없어도 핵심 주장은 육안 재검토.
 
 ## Layer 3 — cross-model 독립 검증 (고위험 옵트인, 본 파일럿 범위 밖)
-correctness-critical 주장만: x-에이전트/Codex 에게 *유일 임무 = "그 값을 생산하는 함수를 직접 열어 읽고 주장을 반박하라"*. 다른 모델 = 다른 블라인드. 비용 때문에 결정적 주장에만. (<project> 파일럿은 1·2층; 3층은 `/codex:adversarial-review` 명시 호출로.)
+correctness-critical 주장만: x-에이전트/Codex 에게 *유일 임무 = "그 값을 생산하는 함수를 직접 열어 읽고 주장을 반박하라"*. 다른 모델 = 다른 블라인드. 비용 때문에 결정적 주장에만. (files_origin 파일럿은 1·2층; 3층은 `/codex:adversarial-review` 명시 호출로.)
 
 ## 경계
 advisory(stop-guard·hookify 하위). 적용 = `dev-discipline-trigger-policy.md` 의 code-analysis 트리거. 단순 질문·prose·번역엔 적용 0.

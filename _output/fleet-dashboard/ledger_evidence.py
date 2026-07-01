@@ -359,10 +359,22 @@ def main():
     ap.add_argument("--topology", default=None, help="PAIR_TOPOLOGY.yaml (alias)")
     args = ap.parse_args()
     topo = []
+    topo_path = None
     if args.topology and Path(args.topology).is_file():
+        topo_path = Path(args.topology)
+    else:
+        # 자동 탐색 (fleet_summary.py:704-706 과 동형): .claude/PAIR_TOPOLOGY.yaml → .claude/domain/ → 루트.
+        # --topology 미지정 시에도 pair 해소가 되도록 (미지정 → 빈 alias → 모든 pair unresolved→HOLD 오분류 방지).
+        for _cand in (Path(args.project) / ".claude" / "PAIR_TOPOLOGY.yaml",
+                      Path(args.project) / ".claude" / "domain" / "PAIR_TOPOLOGY.yaml",
+                      Path(args.project) / "PAIR_TOPOLOGY.yaml"):
+            if _cand.is_file():
+                topo_path = _cand
+                break
+    if topo_path:
         # fleet_summary.parse_pair_topology 와 동형 최소 파서
         cur, pairs = None, []
-        for ln in Path(args.topology).read_text(encoding="utf-8").splitlines():
+        for ln in topo_path.read_text(encoding="utf-8").splitlines():
             s = ln.strip()
             if s.startswith("- pair_id:"):
                 cur = {"pair_id": s.split(":", 1)[1].strip()}
@@ -372,6 +384,9 @@ def main():
             elif cur and s.startswith("x_agent:"):
                 cur["x_agent"] = s.split(":", 1)[1].strip().strip('"\'')
         topo = pairs
+    else:
+        import sys as _sys
+        print("[warn] PAIR_TOPOLOGY.yaml 없음 → pair resolution 비활성(pair 토큰 unresolved→HOLD). --topology 로 명시 가능.", file=_sys.stderr)
     out = scan_ledger_evidence(args.project, args.machine, topo)
     print(json.dumps(out["summary"], ensure_ascii=False, indent=2))
     for e in out["evidence"]:

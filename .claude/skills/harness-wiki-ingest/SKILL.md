@@ -1,8 +1,8 @@
 ---
 name: harness-wiki-ingest
-description: "raw 소스 1건을 vault/wiki에 증류 ingest. 소스카드+index/log/overview 갱신+entity/concept 페이지+모순 플래그. 인용 실재검증(선택) 내장, 변환은 기존 자산(PDF→비전·pptx/docx→import_legacy·text→Read), 증류·모순은 2-pass(c-/x-). 에이전트 모드(litellm 미사용). 명시 호출 전용."
+description: "raw 소스 1건을 vault/wiki에 증류 ingest. 소스카드+index/log/overview 갱신+entity/concept 페이지+모순 플래그. Zotero 인용 실재검증 내장, 변환은 기존 자산(PDF→비전·pptx/docx→import_legacy·text→Read), 증류·모순은 2-pass(c-/x-). 에이전트 모드(litellm 미사용). 명시 호출 전용."
 disable-model-invocation: true
-allowed-tools: [Read, Write, Edit, Grep, Glob, Bash, Task]
+allowed-tools: [Read, Write, Edit, Grep, Glob, Bash, Task, mcp__zotero__zotero_search_items, mcp__zotero__zotero_item_metadata]
 ---
 
 # harness-wiki-ingest — 소스 → 위키 증류 (에이전트 모드)
@@ -29,12 +29,12 @@ allowed-tools: [Read, Write, Edit, Grep, Glob, Bash, Task]
 - 수렴(최소 2회 또는 carve-out 3조건)까지. audit log의 task_calls와 메타 일치.
 - 모든 주장 = anchor `[src: …]` 또는 source 링크. 무출처는 "출처 미확보".
 
-## STEP 3 — 인용 실재검증(선택) (내장)
-- 소스의 DOI/서지를 ``로 대조 → 실재 시 `<cite-key>` 연결.
+## STEP 3 — Zotero 인용 실재검증 (내장)
+- 소스의 DOI/서지를 `mcp__zotero__zotero_search_items`로 대조 → 실재 시 `zotero:<KEY>` 연결.
 - 미발견 = **"DOI-only"/"URL-only"** 정직 표기. **가짜 citekey 절대 생성 금지** (조사5규율 L4).
 
 ## STEP 4 — 페이지 쓰기 (page-schema 준수)
-1. `vault/wiki/sources/<slug>.md` (source 카드: source_file·sha256·trust·trust_boundary·date·cite)
+1. `vault/wiki/sources/<slug>.md` (source 카드: source_file·sha256·trust·trust_boundary·date·zotero)
 2. `index.md` 갱신(해당 섹션에 항목 추가)
 3. `overview.md` 갱신(필요 시 종합 수정)
 4. 핵심 인물·기관·프로젝트 → `entities/<TitleCase>.md` 생성/갱신

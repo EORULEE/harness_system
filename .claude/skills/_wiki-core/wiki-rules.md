@@ -15,8 +15,8 @@
 - 모든 사실 주장 = anchor 인용 `[src: <key>]`(소스 JSON 앵커) 또는 `[[source-card]]` 링크.
 - 무출처 일반화 금지. 근거 없으면 "출처 미확보"로 표기(날조 금지).
 
-## 4. 인용 실재성(선택) — 날조 금지
-- 외부 서지는 **reference manager 실재 항목만(있을 때)** 인용(`<cite-key>`). reference manager(있으면)로 확인.
+## 4. 인용 실재성 (Zotero) — 날조 금지
+- 외부 서지는 **Zotero 라이브러리 실재 항목만** 인용(`zotero:<KEY>`). `zotero` MCP로 확인.
 - 미발견 = **"DOI-only"** 또는 "URL-only"로 정직 표기. **가짜 citekey 생성 절대 금지** (조사 5규율 L4·feedback_references 코드강제판).
 
 ## 5. 모순 처리

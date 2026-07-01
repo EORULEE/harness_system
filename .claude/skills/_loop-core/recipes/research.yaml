@@ -7,15 +7,15 @@ validation_mode: [executor-verifier]        # 중요 주장은 + cross-model
 reuses:
   - multi-model-research              # Claude + ChatGPT(gpt-5.5) 교차반박
   - research-agent                    # Claude 조사 몫(서브에이전트, ≥10 출처)
-  - notes-app                          # vault 저장
-  - kb                            # 서지/DOI(실재 항목만)
+  - obsidian                          # vault 저장
+  - zotero                            # 서지/DOI(실재 항목만)
 gate: plan-approval                   # 가벼운 단발이면 'multi-model 로 진행?' 1줄 확인
 steps:
   - {id: 1, action: "독립 조사(research-agent ≥10 출처, 다양유형, DOI/URL)", uses: "research-agent"}
   - {id: 2, action: "ChatGPT 조사(gpt-5.5 + web_search)", uses: "multi_research.py orchestrate"}
   - {id: 3, action: "출처·DOI·URL·주장-근거 연결 검사(read-only verifier)", uses: "loop-verifier"}
   - {id: 4, action: "모델 교차반박(적대검증) → 살아남은 주장만 종합", uses: "multi-model-research"}
-  - {id: 5, action: "Wiki/vault 승격은 사용자 승인 후", uses: "notes-app/knowledge-promotion", when: "approved"}
+  - {id: 5, action: "Wiki/vault 승격은 사용자 승인 후", uses: "obsidian/knowledge-promotion", when: "approved"}
 budget: {agents: "3~5", synthesis_max: 2, repeat_fail_hold: 2}
 editable_paths: ["vault/notes/**", "vault/literature/**", "_output/loops/<loop_id>/**", ".claude/references/**"]
 human_gates: ["Wiki 정본 승격(사용자 승인 후)"]

@@ -96,7 +96,7 @@ def render_shared(fm, raw, src_rel, src_sha, target_project, stale, reason):
         "> ⚠️ **이 문서는 source of truth가 아닙니다.** `_active_context.md`(Claude 세션 연속성 정본)의",
         "> **자동 생성 읽기 전용 미러**입니다. 사람·모델 모두 **직접 편집 금지**(다음 publish 시 덮어씀).",
         "> 정본: `MEMORY.md`(장기 규칙·반복 사실) · `_active_context.md`(현재 작업) · `project_session_checkpoint.md`(정식 인계).",
-        "> 수치·인용·사실의 최종 정본 = Experiments / kb / Data / Code.",
+        "> 수치·인용·사실의 최종 정본 = Experiments / Zotero / Data / Code.",
     ]
     if stale:
         head.append(f"> 🟥 **stale=true ({reason})** — 이 미러를 신뢰하지 말고 정본을 재확인하세요.")

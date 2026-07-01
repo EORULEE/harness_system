@@ -404,10 +404,40 @@ def summarize_turn(turn_id: str) -> dict[str, Any]:
     }
 
 
+def summarize_recent(n: int) -> dict[str, Any]:
+    """최근 N개 turn 의 task-call/pair 집계. 비동기 서브에이전트 완료가 별도 알림 턴으로 와서
+    현재 턴엔 task-call 이 0 이어도, 직전 spawn 턴의 페어 증거를 정직하게 인용할 수 있게 한다."""
+    events = _iter_log_events()
+    seen: list[str] = []
+    for e in events:
+        t = e.get("turn")
+        if t and t != "no-turn" and t not in seen:
+            seen.append(t)
+    recent = seen[-n:] if n > 0 else seen
+    rset = set(recent)
+    tcs = [e for e in events if e.get("event") == "task-call" and e.get("turn") in rset]
+    pairs = sorted({e.get("payload", {}).get("pair_inferred", "?") for e in tcs})
+    return {
+        "turns_scanned": recent,
+        "task_calls": len(tcs),
+        "pairs_seen": pairs,
+        "note": f"최근 {len(recent)}개 턴 집계 (비동기 페어 완료가 별도 알림 턴으로 온 경우 포함).",
+    }
+
+
 def cmd_verify(args) -> None:
+    if getattr(args, "recent", 0):
+        result = summarize_recent(args.recent)
+        if args.format == "json":
+            print(json.dumps(result, ensure_ascii=False, indent=2)) ; return
+        print(f"━━━ 최근 {len(result['turns_scanned'])}개 턴 집계 ━━━")
+        print(f"  Task 호출:     {result['task_calls']}회")
+        print(f"  관찰된 페어:    {result['pairs_seen']}")
+        print(f"  💡 {result['note']}")
+        return
     turn_id = args.turn or read_current_turn()
     if not turn_id:
-        result = {"turn_id": None, "task_calls": 0, "pairs_seen": [], "warning": "현재 턴 없음. UserPromptSubmit hook이 발화하지 않음 (훅 미연결?)."}
+        result = {"turn_id": None, "task_calls": 0, "pairs_seen": [], "warning": "현재 턴에 등록된 turn 이 없음. (이 verify 가 spawn 턴이 아닌 후속/알림 턴에서, 또는 spawn 전에 실행됐을 수 있음. 비동기 서브에이전트 완료는 별도 알림 턴으로 옴 → `verify --turn <spawn-turn>` 또는 `verify --recent N` 으로 직전 spawn 턴을 확인하라. UPS 훅 배선이 정상이어도 발생할 수 있음.)"}
     else:
         result = summarize_turn(turn_id)
     if args.format == "json":
@@ -424,7 +454,9 @@ def cmd_verify(args) -> None:
     print(f"  Task 완료:     {result['task_ends']}회")
     print(f"  관찰된 페어:    {result['pairs_seen']}")
     if result["task_calls"] == 0:
-        print() ; print("  💡 이 턴에 서브에이전트 분기가 없었습니다.") ; print("     → 메타 블록에 '참여 페어: ...' 주장은 허위 준수가 됩니다.") ; print("     → A0 모드라면 메타 블록 자체를 생략하세요.")
+        print() ; print("  💡 이 턴에 task-call 이 없습니다. (비동기 페어는 직전 spawn 턴에 있을 수 있음 → `verify --recent 3` 확인)")
+        print("     → 직전 spawn 턴에도 task-call 이 0 이면, 메타 블록의 '참여 페어' 주장은 허위 준수입니다.")
+        print("     → A0 모드라면 메타 블록 자체를 생략하세요.")
 
 
 def _collect_strings(obj: Any, out: list[str]) -> None:
@@ -702,7 +734,7 @@ def cmd_stop_guard() -> None:
     is_b_workflow = _matches_trigger(preview, full_prompt, _B_WORKFLOW_TRIGGERS)
     is_true_conv = _matches_trigger(preview, full_prompt, _TRUE_CONVERSATIONAL)
     # (2026-06-10 포렌식 ①수정) 진행/승인/조종/빠른확인 = 새 c-/x- 팬아웃 불필요 turn.
-    #   forensic(<project> 11/11 · coin 65/67 차단이 이 범주): A1/B 키워드는 있으나 실제론
+    #   forensic(files_origin 11/11 · coin 65/67 차단이 이 범주): A1/B 키워드는 있으나 실제론
     #   진행지시·승인·조종·단순확인이라 2-pass 강제가 오발화. substring 매칭(긴 프롬프트 내 포함도 인정).
     _LIGHT_STEER_SUBSTR = (
         # 진행/계속/이어서
@@ -1080,7 +1112,7 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("subagent-audit")
     te = sub.add_parser("turn-end") ; te.add_argument("--guard-exit", type=int, default=0)
     sub.add_parser("stop-guard")
-    vf = sub.add_parser("verify") ; vf.add_argument("--turn") ; vf.add_argument("--format", choices=["text", "json"], default="text")
+    vf = sub.add_parser("verify") ; vf.add_argument("--turn") ; vf.add_argument("--recent", type=int, default=0) ; vf.add_argument("--format", choices=["text", "json"], default="text")
     sh = sub.add_parser("show") ; sh.add_argument("--last", type=int)
     st = sub.add_parser("stats") ; st.add_argument("--format", choices=["text", "json"], default="text")
     return p

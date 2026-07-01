@@ -44,6 +44,9 @@ const EXECVERB = new RegExp(
   "그림\\s*(그려|만들)|그려\\s*줘|그려줘|그려\\s*줄|그래프\\s*(그려|만들|그려줄|그려줘)|" +
   "개념도|인포그래픽|일러스트|모식도|선화|다이어그램|도식화|" +
   "hero\\s*image|발표\\s*슬라이드|슬라이드\\s*(로\\s*)?(구성|배치|만들)|" +
+  // canary/교차검증/정합성검토 → harness-loop-engineering formal 루프(contract→events→verdict ledger) 자동라우팅.
+  // (표준 canary 프롬프트가 EXECVERB 미매치로 침묵→대화처리→ledger 미기록 이던 결함 보정, 2026-07-01)
+  "교차\\s*(검증|검토)|적대\\s*(검토|검증|교차)|정합성\\s*(검토|검증)|cross[-\\s]?domain|canary|verdict|페어\\s*(로|가)?\\s*(교차|검토|검증)|" +
   "\\b(fix|implement|deploy|refactor|debug|build|migrate|polish|infographic|diagram|draw)\\b)", "i");
 if (!EXECVERB.test(p)) process.exit(0);
 
@@ -72,6 +75,7 @@ const directive =
   `\n[loop-control-plane · advisory] 이 요청은 실행형 작업일 수 있음 — 바로 손대지 말고 ` +
   `harness-loop-engineering 으로 (1) 작업유형·recipe 판단 (2) 계획 요약(8항목) ` +
   `(3) AskUserQuestion 승인 게이트 후 **기존 workflow(DEV/Research/Writing/Experiment/Mode C/Design/배포) 재사용** 실행할 것.\n` +
+  `⚠️ canary·cross-domain 교차검증이면 harness-loop-engineering 이 **formal 루프(contract→events.jsonl→verdict)를 디스크에 기록**해야 pair-live-pass(ACTIVE)가 남는다 — 대화형 verdict 만 출력하면 ledger 미기록 = ACTIVE 안 됨.\n` +
   `단순 질문·상태조회·개념질문은 즉답(계약 만들지 않음). DEV/조사/시스템 세부 넛지는 각 전용 훅에 위임(중복 안내 안 함).\n` +
   `적용 여부는 요청 성격 보고 네가 판단(강제 아님). 최종권위=stop-guard/hookify.\n`;
 
