@@ -61,8 +61,9 @@ const MODES = {
     `**결론/판정을 내리기 전에 반례부터 탐색**(특히 도메인 물리·모델 방법론·데이터 아티팩트 판정). ` +
     `페어 없으면 1-pass + 단정 1개당 근거 1개. 최소 2회 수렴(1회 종결은 3조건 충족 시만).\n`,
   B:
-    `\n[mode B · advisory] 구현 — 진행 전 **명세 게이트(deep-interview) 또는 '바로 진행' 1줄 확인**. ` +
-    `완료 주장은 fresh evidence(test/build/lint) 1개=주장 1개(Ralph 완료검증). 승인 전 커밋·배포 금지.\n`,
+    `\n[mode B · advisory] 구현 3단계 체인 — ① 진행 전 **명세 게이트(deep-interview) 또는 '바로 진행' 1줄 확인** ` +
+    `② 구현은 **DEV 규율**: 검증가능 동작변경+회귀위험이면 TDD(실패테스트→최소구현→green), 버그면 systematic-debugging(증상→재현→근본원인) ` +
+    `③ 완료 주장은 fresh evidence(test/build/lint) 1개=주장 1개(**Ralph 완료검증**). 승인 전 커밋·배포 금지.\n`,
   C:
     `\n[mode C · advisory] 자율 실험 루프 — \`.claude/cycle.<proj>.yaml\` 인프라 필요(없으면 미적용 → A1/B로 처리). ` +
     `배치 경계 사람 승인 게이트 + 기계 가드레일(예산·kill·divergence·유의성). 코인·실거래 hard-refuse.\n`,
