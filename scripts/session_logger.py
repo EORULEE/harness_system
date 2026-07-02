@@ -172,6 +172,11 @@ def _is_meta_question(prompt: str) -> bool:
 
 def classify_mode(prompt: str) -> str:
     p = (prompt or "").lower()
+    # 2026-07-02: 명시 모드 라벨(A0:/A1:/B:/C:) — 사용자 명시 선언은 휴리스틱·메타질문 판정보다 우선.
+    #   mode-label-advisory.mjs 와 동일 정규식 계열. C(자율 실험 루프)는 경계 판단이 A1급 검증 대상이라 A1 매핑.
+    _lbl = re.match(r"^\s*[>*_`\-\s]{0,4}(a0|a1|b|c)\s*[:：]", p)
+    if _lbl:
+        return {"a0": MODE_A0, "a1": MODE_A1, "b": MODE_B, "c": MODE_A1}[_lbl.group(1)]
     # v2.5.5: bracket meta question 은 B 트리거에 우선해서 A0 처리
     if _is_meta_question(prompt or ""):
         return MODE_A0
