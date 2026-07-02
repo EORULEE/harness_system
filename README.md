@@ -12,6 +12,14 @@ bash selftest.sh      # 요구사항·smoke(11)·스킬(45)·훅·도구·계정
 ```
 Claude Code 첫 세션을 열면 온보딩이 **SETUP.md 기준 전체 설정(코어·Wiki·계정·MCP)을 안내·질문**합니다.
 
+## 이미 쓰던 프로젝트(연구 폴더 등)에 붙이기 — 딱 2줄
+```bash
+bash install_into_project.sh /경로/내-기존프로젝트   # 하네스를 그 폴더에 얹음 (add-only)
+cd /경로/내-기존프로젝트 && claude                   # 끝. 나머지는 Claude 가 대화로 안내
+```
+- 연구 데이터·기존 파일은 **안 건드림**. 기존 `CLAUDE.md`/`settings.json` 은 보존·병합(`.bak` 백업).
+- 끝나면 그 폴더에서 selftest 자동 실행으로 검증. 되돌리기 절차는 `SETUP.md` 연동 섹션.
+
 ### 폴더 구조 (한눈에)
 - `CLAUDE.md` 규율 · `.claude/` (settings·skills·hookify 규칙) · `hooks/` · `scripts/` · `tests/` (smoke)
 - `fleet-dashboard/` — **콜렉터 코드**(fleet_summary·ledger_evidence). 지우지 말 것.
