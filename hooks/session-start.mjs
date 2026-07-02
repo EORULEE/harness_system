@@ -1,4 +1,19 @@
 #!/usr/bin/env node
+// [hook-snapshot-stale check] 2026-07-02 — claude 프로세스 장수 시 settings 훅 "목록" 스냅샷이
+// 프로세스 시작 시점 고정(/clear 미갱신) → 이후 배선된 훅은 그 프로세스에서 비활성. 파일 수정은 즉시 반영.
+(async () => { try {
+  const fs = await import("node:fs");
+  const p = `/proc/${process.ppid}`;
+  if (fs.existsSync(p)) {
+    const ps = fs.statSync(p).mtimeMs;
+    const dir = (process.env.CLAUDE_PROJECT_DIR || ".") + "/.claude";
+    const st = ["settings.json", "settings.local.json"].map(f => dir + "/" + f)
+      .filter(f => fs.existsSync(f) && fs.statSync(f).mtimeMs > ps + 5000);
+    if (st.length) process.stdout.write(
+      `\n⚠️ [hook-snapshot-stale] settings 훅 배선(${st.map(f=>f.split("/").pop()).join(", ")})이 이 claude 프로세스 시작 이후 변경됨 — ` +
+      `새로 배선된 훅은 이 프로세스에서 비활성일 수 있음. **claude 재시작 필요**(/clear 로는 스냅샷 미갱신).\n`);
+  }
+} catch {} })();
 // session-start.mjs — SessionStart hook + 수동 실행 겸용
 //
 // 역할:
