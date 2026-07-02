@@ -23,12 +23,18 @@ roles:
       - format controller (HWP/DOCX/HTML 구조 보호·파일 제어)
     note: LLM 문장 생성보다 파일 제어·도구 검증을 우선한다.
 
-  primary_writer:
+  primary_writer:                   # 기본 작성자 = Claude (키 0 으로 작동).
+    who: claude
+    model_ref: opus_default
+    duties: [논문·보고서·제안서 초안 1차 작성 (Claude 직접)]
+
+  explicit_gemini_writer:           # 명시 요청 전용 — 사용자가 'Gemini 로 써줘/다듬어줘' 라고 할 때만.
     who: gemini
-    engine: gemini-write            # ~/.claude/skills/gemini-write (위임, 무수정)
-    delegate_via: gemini-writer     # ~/.claude/agents/gemini-writer.md (페르소나+검토 루프)
+    engine: gemini-write
+    delegate_via: gemini-writer
     model_ref: gemini_pro_default
-    duties: [논문·보고서·제안서 초안 1차 작성]
+    trigger: "사용자 명시 요청 시만. 자동 위임 금지."
+    duties: [명시 요청 시 재작성·다듬기·교차버전]
 
   fallback_writer:
     who: chatgpt
