@@ -7,7 +7,7 @@
 1. **Claude Code 하네스 = primary orchestrator** (single primary authority).
 2. **stop-guard + hookify = 최종 안전권위.** 본 Dev Discipline Suite는 그 **하위 advisory**.
 3. **harness-ralph = Mode B 완료검증 루프**(circuit_breaker ≤5). 본 Suite의 closeout은 ralph를 **대체하지 않고 보조**.
-4. **codex-plugin-cc(ChatGPT gpt-5.5) = 교차모델 적대검토 primary.** code-quality-review는 codex 경로를 **대체하지 않고 프레이밍만** 제공.
+4. **codex exec CLI 직접(ChatGPT gpt-5.6-sol) = 교차모델 적대검토 primary** (플러그인 제거 2026-07-13). code-quality-review는 codex 경로를 **대체하지 않고 프레이밍만** 제공.
 5. **harness-deep-interview = 반자동 명세 게이트.** brainstorming은 흡수 스킬화하지 않음(중복) — spec-quality-review로 *검토 부분만* 차용.
 
 ## 흡수한 패턴 (upstream → core rule)

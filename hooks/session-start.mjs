@@ -1,6 +1,8 @@
 #!/usr/bin/env node
-// [hook-snapshot-stale check] 2026-07-02 — claude 프로세스 장수 시 settings 훅 "목록" 스냅샷이
-// 프로세스 시작 시점 고정(/clear 미갱신) → 이후 배선된 훅은 그 프로세스에서 비활성. 파일 수정은 즉시 반영.
+// [hook-snapshot-stale check] 2026-07-02 — claude 프로세스가 장수하면 settings 훅 "목록" 스냅샷이
+// 프로세스 시작 시점에 고정(/clear 미갱신) → 이후 배선된 훅은 그 프로세스에서 비활성.
+// 훅 "파일" 수정은 즉시 반영이므로, 이미 배선된 본 파일에 검사를 넣어 재시작 없이 fleet 전체 활성.
+// 위치 독립·자기완결·advisory(실패 무시, mac /proc 부재 포함).
 (async () => { try {
   const fs = await import("node:fs");
   const p = `/proc/${process.ppid}`;
@@ -14,6 +16,24 @@
       `새로 배선된 훅은 이 프로세스에서 비활성일 수 있음. **claude 재시작 필요**(/clear 로는 스냅샷 미갱신).\n`);
   }
 } catch {} })();
+// [skill-shadow drift advisory] 2026-07-08 (AC15, 계약 contract-skill-dualization) —
+// repo(SoT)↔global 스킬 drift 를 매 세션 report-only 경고(hard-block 아님, 헌법 report-first).
+// 특히 global-ahead(편집이 repo 아닌 global 서 남) → repo 흡수 필요.
+// ⚠️ **동기 top-level 블록**(async IIFE 아님) — ESM import 는 hoist 되므로 아래 정적 import 한
+//    spawnSync/existsSync 를 여기서 쓸 수 있고, 모듈 평가 중 main() 호출(파일 끝) 전에 완료가 보장된다.
+//    (codex BLOCK2 반영: async fire-and-forget 은 main() 의 process.exit 에 잘려 경고 유실 가능했음.)
+try {
+  const dir = process.env.CLAUDE_PROJECT_DIR || ".";
+  const script = dir + "/scripts/skill_shadow_check.py";
+  if (existsSync(script)) {
+    const r = spawnSync("python3", [script, "report", "--quiet"],
+      { timeout: 8000, encoding: "utf8" });
+    const out = (r.stdout || "");
+    const ga = out.split("\n").find(l => l.includes("global-ahead drift"));
+    if (ga) process.stdout.write(
+      `\n⚠️ [skill-shadow] ${ga.trim()}\n   → \`python3 scripts/skill_shadow_check.py check\` 로 확인, reconcile 후 \`skill_sync.py --apply\`.\n`);
+  }
+} catch { /* advisory: 실패 무시 */ }
 // session-start.mjs — SessionStart hook + 수동 실행 겸용
 //
 // 역할:
@@ -35,9 +55,9 @@ import {
     scriptPath, runPython, getProjectDir,
     logError
 } from './harness-hook-lib.mjs';
-import { existsSync, readdirSync } from 'node:fs';
+import { existsSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import process from 'node:process';
 
 const args = process.argv.slice(2);

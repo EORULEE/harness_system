@@ -9,38 +9,38 @@
 #    skill SKILL.md·기타 *-rules.md 는 role 이름과 model_refs 키만 참조한다(모델명 금지).
 
 schema: model_policy
-version: 1.0
+version: 1.1                  # 2026-07-02 Claude-first (사용자 결정)
 scope: writing-suite          # new-suite layer SoT (NOT system-wide)
 
 # ── 역할 정의 (계약 모델정책 구조) ──────────────────────────────
 roles:
   orchestrator:
     who: claude
-    model_ref: opus_default
+    model_ref: opus_default           # (2026-07-05 사용자 결정) 글쓰기 스킬 = Opus 4.8 유지 (Fable-5 는 7/7까지 세션 검토용만)
     duties:
       - 전체 오케스트레이션 (어떤 writer/format skill을 어떤 순서로)
       - final integrity checker (사실·논리·요청부합 최종 검증)
       - format controller (HWP/DOCX/HTML 구조 보호·파일 제어)
     note: LLM 문장 생성보다 파일 제어·도구 검증을 우선한다.
 
-  primary_writer:                   # 기본 작성자 = Claude (키 0 으로 작동).
-    who: claude
-    model_ref: opus_default
+  primary_writer:                   # (2026-07-02 사용자 결정) 기본 작성자 = Claude.
+    who: claude                     #   Gemini 는 사용자가 "gemini-write 로 다듬어줘/써줘" 등
+    model_ref: opus_default         #   (2026-07-05 사용자 결정: 글쓰기=Opus 유지) 명시 요청할 때만(아래 explicit_gemini_writer) 사용.
     duties: [논문·보고서·제안서 초안 1차 작성 (Claude 직접)]
 
-  explicit_gemini_writer:           # 명시 요청 전용 — 사용자가 'Gemini 로 써줘/다듬어줘' 라고 할 때만.
+  explicit_gemini_writer:           # 명시 요청 전용 — 자동 위임 금지.
     who: gemini
-    engine: gemini-write
-    delegate_via: gemini-writer
+    engine: gemini-write            # ~/.claude/skills/gemini-write (위임, 무수정)
+    delegate_via: gemini-writer     # ~/.claude/agents/gemini-writer.md (페르소나+검토 루프)
     model_ref: gemini_pro_default
-    trigger: "사용자 명시 요청 시만. 자동 위임 금지."
+    trigger: "사용자가 'gemini-write 로 / Gemini 로 (다듬어|써)줘' 를 명시할 때만. 그 외 어떤 writer skill 도 자동으로 이 role 을 쓰지 않는다."
     duties: [명시 요청 시 재작성·다듬기·교차버전]
 
   fallback_writer:
     who: chatgpt
-    engine: codex                   # codex 플러그인 app-server 경로
+    engine: codex                   # bare codex exec (CLI 직접 — 플러그인 제거 2026-07-13)
     model_ref: chatgpt_default
-    duties: [primary_writer(Gemini) 실패 시 폴백 작성]
+    duties: [explicit_gemini_writer(Gemini) 실패 시 폴백 작성 — 명시 Gemini 경로 한정]
 
   adversarial_reviewer:
     who: chatgpt
@@ -54,31 +54,32 @@ roles:
 
 # ── 모델명 단일 출처 (skill은 이 키만 참조) ─────────────────────
 model_refs:
-  opus_default: claude-opus-4-8
-  gemini_pro_default: gemini-3.1-pro-preview     # write.py 실제 백엔드와 정합(2026-06-23 r2: 2.5→3.x 코드기준 정렬)
-  gemini_flash_fallback: gemini-3.5-flash
-  chatgpt_default: gpt-5.5
+  opus_default: claude-opus-4-8              # 글쓰기 스킬 primary (2026-07-05 사용자 결정: 장기 사용 = Opus 4.8)
+  fable_default: claude-fable-5              # 이력 문서화용 존치(2026-07-05~07 세션 검토에만 사용, role 참조 없음·기능 영향 0)
+  gemini_pro_default: gemini-3.1-pro-preview  # was gemini-2.5-pro
+  gemini_flash_fallback: gemini-3.5-flash     # was gemini-2.5-flash
+  chatgpt_default: gpt-5.6-sol
 
 # ── 백엔드 실제 체인 문서화 (AC17 정적 대조 대상) ───────────────
 # write.py 가 런타임에 수행하는 폴백 체인. 본 선언이 write.py 와 일치해야 PASS.
 backend_chain:
   reference_file: "~/.claude/skills/gemini-write/write.py"
-  primary: gemini-3.1-pro-preview     # write.py:213 default + :9 체인(2026-06-23 r2 정렬)
-  on_429: gemini-3.5-flash            # write.py:197-199
+  primary: gemini-3.1-pro-preview
+  on_429: gemini-3.5-flash
   on_503: retry_with_backoff
-  on_total_gemini_failure: "chatgpt:gpt-5.5"   # codex app-server → bare codex exec
-  chatgpt_call_path: ["codex-companion.mjs (app-server)", "bare codex exec"]
-  note: "ChatGPT 계정은 gpt-5.5만 허용(*-codex/gpt-5.x 차단)."
+  on_total_gemini_failure: "chatgpt:gpt-5.6-sol"   # bare codex exec (플러그인 제거 2026-07-13)
+  chatgpt_call_path: ["bare codex exec (CLI 직접 — companion 제거됨)"]
+  note: "ChatGPT 계정: 일반모델(gpt-5.5/5.6-sol) 허용, *-codex 계열 차단."
 
 # ── 최종 폴백 graceful (AC22) ───────────────────────────────────
 graceful_terminal:
-  condition: "primary_writer(Gemini 빌링) AND fallback_writer(codex/ChatGPT) 둘 다 unavailable"
+  condition: "(명시 Gemini 경로에서) explicit_gemini_writer AND fallback_writer 둘 다 unavailable"
   detect: "gemini.env 키 부재/429 지속 + codex companion 미발견 또는 계정 차단"
   action:
     - "orchestrator(Claude)가 직접 초안 작성으로 위임 (writer 경로 우회)"
     - "또는 사용자에게 '전 writer 경로 불가' 에스컬레이션 후 중단"
   forbid: ["크래시(RuntimeError 노출)", "무한 폴백 재시도"]
-  note: "이 머신은 codex companion 발견됨(폴백 가용). <machine>류 차단 환경 대비 규정."
+  note: "이 머신은 codex companion 발견됨(폴백 가용). server-a류 차단 환경 대비 규정."
 
 # ── 권위 ────────────────────────────────────────────────────────
 authority: "v4.5 stop-guard·hookify 최종 권위. 본 정책은 그 아래 종속."

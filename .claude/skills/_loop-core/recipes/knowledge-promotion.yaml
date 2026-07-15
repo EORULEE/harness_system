@@ -11,7 +11,7 @@ reuses:
 gate: plan-approval
 steps:
   - {id: 1, action: "source audit(주장-근거·source_paths 실재 검증)", uses: "harness-claim-evidence-audit + hallucination_guard"}
-  - {id: 2, action: "Codex 적대반박 1회", uses: "/codex:adversarial-review"}
+  - {id: 2, action: "Codex 적대반박 1회", uses: "codex exec 적대검토(CLI)"}
   - {id: 3, action: "Claude 재검증(Codex 결과는 정본 아님)", uses: "loop-verifier"}
   - {id: 4, action: "사용자 승인 후 Wiki/vault 정본 이동", uses: "obsidian", when: "approved"}
 budget: {codex_review: 1, claude_reverify: 1}         # Codex 1회 + Claude 재검증 1회

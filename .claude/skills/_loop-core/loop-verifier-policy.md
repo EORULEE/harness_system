@@ -24,7 +24,7 @@
 - Claude 결과를 **Codex(ChatGPT)/외부 모델이 반박**(적대검토).
 - ⚠️ **Codex 결과는 사실 정본이 아니다** — Claude 가 source 로 재검증한다.
 - 대상: 보안·아키텍처·대규모 수정, 중요 주장·특허·Wiki 승격, 중요 배포.
-- 경로 = `/codex:adversarial-review`·`/codex:review`(플러그인 app-server, gpt-5.5). 유료 → human-gated 동반.
+- 경로 = `codex exec` 적대검토(CLI 직접, gpt-5.6-sol — 플러그인 제거 2026-07-13). 유료 → human-gated 동반.
 
 ### human-gated
 - 배포·삭제·push/merge·외부 업로드·비용 발생 호출·Mode C 실행·Design sync·Wiki 승격에

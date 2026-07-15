@@ -19,6 +19,7 @@ allowed-tools:
 - 모델 정책은 role로만 참조(`_writing-core/model-policy.yaml`).
 
 ## 절차 (읽기 전용)
+> 📄 대상 문서가 **DOCX·HWP·HWPX면 kordoc(MCP) 추출**을 claim·수치·인용 정합의 기준 텍스트로(수식·병합표 보존 — 수치 대조 정확도↑). PDF=PyMuPDF 비전. 정본 `_writing-core/document-extraction.md`.
 1. 대상 문서 Read + contract·domain profile(용어/인용 규범) 참조 → **claim 추출**(사실 주장·수치·인용·metric·dataset·sensor term).
 2. 각 claim에 **근거 연결**: 근거유형 태깅 — `사용자제공` / `조사출처(DOI/URL)` / `계산` / `미확인`.
 3. **일치 검증**: 본문 수치 ↔ 표/그림, 인용 키 ↔ 실재 출처, metric·dataset·sensor 명칭 일관성.
@@ -26,12 +27,6 @@ allowed-tools:
    - **high**: 근거 없는 사실 단정·수치 불일치·미검증 인용·과장 단정.
    - **medium**: 근거 약함·출처 모호·용어 불일치.
    - **low**: 근거 명확·일치.
-
-## 보조 검증기 (scoped — r2 정책)
-- 본 감사(또는 Knowledge Promotion Gate·release acceptance audit·사용자 "실재 확인" 요청) 중 **파일·함수·인용 경로의 실재**를 확인할 때,
-  보조로 `scripts/hallucination_guard.py` 를 호출한다(읽기전용 grep 검증, advisory):
-  `echo "$대상텍스트" | python3 scripts/hallucination_guard.py --cwd <proj> --format json`.
-- **전역/Stop 훅 자동 배선 금지** — 일반 대화·단순 글쓰기에서는 실행하지 않는다. system-question-advisory 와 **중복 실행 금지**(단계가 다름). 정본 = SYSTEM_RELEASE `accuracy_tool_policy`.
 
 ## 출력 (권고 only — 직접 수정 안 함)
 - claim-evidence 표: `claim | 근거유형 | 출처 | 일치여부 | risk`.

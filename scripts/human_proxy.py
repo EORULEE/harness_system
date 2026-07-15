@@ -6,10 +6,18 @@ AutoGen UserProxyAgent 패턴을 하네스에 이식.
 이 에이전트에게 메시지를 보내면, mode 정책에 따라 자동 응답하거나
 실제 사용자에게 묻는다.
 
-3 모드 (AutoGen 호환):
+3 모드 (AutoGen 호환) — ⚠️ 안전 override: **고위험(위험목록 매치·미분류)은 모드와 무관하게
+항상 사람 강제**(NEVER 에서도). 아래는 저위험 결정에만 적용된다:
     ALWAYS    - 매 호출마다 인간에게 묻는다
     TERMINATE - max_auto_reply 도달 또는 termination 메시지일 때만 묻는다
-    NEVER     - 절대 묻지 않고 자동 응답만 한다
+    NEVER     - (저위험만) 자동 응답. 고위험은 여전히 사람.
+
+저위험 auto-reply(2026-07-09 개선):
+    도메인 페르소나(personas.yaml 역할 × _domain-profiles 도메인) 조합 프롬프트를 emit →
+    오케스트레이터(Claude)가 전문 답변 + codex 검증 → `persona-answer` CLI 로 확정.
+    ⚠️ codex 실제 실행은 **오케스트레이터 책임**(스크립트는 stdlib·LLM/codex 미호출).
+    스크립트는 codex-verdict != pass 시 **사람 에스컬레이션을 강제**(가짜 채택 차단, enforcement point).
+    도메인 부재 + 명시 risk=low = 기존 options[0] fallback(하위호환).
 
 Storage layout (per-project):
     .claude/runtime/
@@ -31,6 +39,13 @@ CLI usage (사용자/대시보드가 응답):
     python scripts/human_proxy.py list-pending
     python scripts/human_proxy.py status
 
+AskUserQuestion 다리 (Claude 대화에서 고위험 승인 UX):
+    스크립트는 AskUserQuestion(Claude 도구)을 직접 못 부른다 → 오케스트레이터(Claude)가 절차로 배선:
+      ① python scripts/human_proxy.py bridge      # pending 을 AskUserQuestion-ready 로 출력
+      ② Claude: 각 pending 을 AskUserQuestion 으로 사용자에게(options 그대로 제시)
+      ③ python scripts/human_proxy.py respond <id> --choice <사용자 답>   # 되먹임
+    → 고위험(fail-closed)·persona codex 실패 승격 결정이 대화 중 매끄러운 승인 팝업으로 뜬다.
+
 동시성:
     - 모든 상태 파일은 harness_common 의 file_lock + atomic_write 사용
     - req_id 는 timestamp + random 16-bit 로 충돌 방지
@@ -41,6 +56,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import secrets
 import sys
 import time
@@ -60,6 +76,11 @@ except ImportError:
     sys.stderr.write("❌ harness_common.py 가 같은 디렉토리에 필요합니다.\n")
     sys.exit(1)
 
+try:
+    from secret_masking import mask_secrets
+except Exception:
+    def mask_secrets(t): return t
+
 
 # ──────────────────────────────────────────────────────────────────
 # 상수
@@ -73,6 +94,27 @@ TERMINATE_KEYWORDS = (
     "TERMINATE", "STOP", "ABORT", "CRITICAL",
     "max_iterations", "user_input_required",
 )
+
+# ── 고위험 패턴 (사람 강제, auto-approve 절대 금지) ──────────────────────
+# 정본 = _loop-core/loop-permission-policy.md 의 human-gated 목록(헌법 §5 계열)의 코드-미러.
+# 매치 시 어떤 모드(NEVER 포함)에서도 사람 에스컬레이션(fail-closed). 새 정본 아님 — 미러이며
+# 정책 변경 시 여기와 정책 문서를 함께 갱신한다(HPA_RISK_MIRROR 태그로 추적).
+# 단어경계(\b)로 오매치 방지(예: "constraint" 안의 "train"). 안전측 = 넓게 잡되 정밀.
+HIGH_RISK_PATTERNS = [
+    r"배포|\bdeploy\b|\brelease\b|\bpromote\b|승격|\bship\b|\bprod\b|production",  # 배포·승격
+    r"삭제|\bdelete\b|\brm\b|\bremove\b|\bdrop\b|덮어쓰|\boverwrite\b|\btruncate\b|\bwipe\b|초기화",  # 파괴적
+    r"\bpush\b|\bmerge\b|\brebase\b|force[- ]?push|--no-verify|\bsync\b",  # git·동기화 외부반영
+    r"업로드|\bupload\b|공개\b|\bpublish\b|외부\s*전송|\bshare\b|전송\b|제출|\bsubmit\b",  # 외부 전송/공개/제출
+    r"유료|\bpaid\b|api[\s_-]*key|과금|\bbilling\b|gemini\s*write|codex\s*exec",  # 유료/외부 호출
+    r"mode\s*c\b|모드\s*c\b|실험\s*실행|experiment\s*run|학습\s*실행|\btrain\b",  # Mode C/학습
+    r"design\s*sync|\bpublished\b|claude\s*design.*(sync|publish)",  # Design sync
+    r"approve\s+(deploy|release|delete|push|merge)",             # 명시적 파괴 승인
+]
+_HIGH_RISK_RE = re.compile("|".join(HIGH_RISK_PATTERNS), re.I)
+
+# 페르소나 조합 소스(재사용 — 새 페르소나 체계 0). personas.yaml × _domain-profiles/<domain>.
+PERSONA_ROLES_REL = ".claude/skills/_paper-review-core/personas.yaml"
+DOMAIN_PROFILES_REL = ".claude/skills/_domain-profiles"
 
 
 # ──────────────────────────────────────────────────────────────────
@@ -182,6 +224,78 @@ class HumanProxyAgent:
         upper = message.upper()
         return any(kw in upper for kw in TERMINATE_KEYWORDS)
 
+    # ─── 위험 분류 (fail-closed) ──────────────────────────────
+    @staticmethod
+    def _classify_risk(message: str, options: list[str], context: dict) -> str:
+        """'high'(사람 강제) / 'low'(페르소나 auto 적격). **fail-closed**: 고위험 패턴 매치 OR
+        저위험 신호 부재 = high. 저위험 적격 = 명시 risk=low 또는 domain 제공(도메인 결정)에 한함.
+        고위험은 어떤 모드에서도 auto-approve 안 됨. 위험목록 정본=loop-permission-policy 미러."""
+        if context.get("force_human") or str(context.get("risk", "")).lower() == "high":
+            return "high"
+        blob = " ".join([message or "", " ".join(options or []),
+                         str(context.get("action", "")), str(context.get("target", ""))])
+        if _HIGH_RISK_RE.search(blob):
+            return "high"
+        # 고위험 패턴은 아님. 그러나 auto 적격은 '명시적 저위험 신호' 필요(fail-closed):
+        #   risk=low(호출측 단언) 또는 domain 제공(도메인 결정). 신호 없으면 = 미분류 = high.
+        if str(context.get("risk", "")).lower() == "low" or context.get("domain"):
+            return "low"
+        return "high"
+
+    # ─── 페르소나 조합 (personas.yaml × _domain-profiles 재사용) ──
+    def _resolve_persona(self, context: dict) -> dict | None:
+        """context.domain 으로 도메인 프로파일 로드(+역할). 없으면 None(→ options[0] fallback).
+        프로젝트 로컬 우선, 없으면 글로벌. 무코드 확장(도메인 프로파일만 있으면 동작)."""
+        domain = context.get("domain")
+        if not domain or not re.fullmatch(r"[A-Za-z0-9._-]+", str(domain)):
+            return None
+        root = self.dirs["project_root"]
+        cands = [root / DOMAIN_PROFILES_REL / domain / "domain.yaml",
+                 Path.home() / ".claude/skills/_domain-profiles" / domain / "domain.yaml"]
+        prof = next((load_yaml(c) for c in cands if c.is_file()), None)
+        if not prof:
+            return None
+        role = context.get("role", "decision-proxy")
+        return {
+            "domain": domain,
+            "persona_seed": prof.get("persona_seed", ""),
+            "terminology": prof.get("terminology", []),
+            "role": role,
+            "role_stance": self._load_role_stance(role),   # personas.yaml 역할(있으면)
+        }
+
+    def _load_role_stance(self, role: str) -> dict | None:
+        """personas.yaml 에서 역할 stance 로드(있으면). '역할×도메인' 조합의 역할 절반.
+        role 이 personas.yaml 에 없으면 None(기본 decision-proxy stance 사용)."""
+        for base in (self.dirs["project_root"] / PERSONA_ROLES_REL,
+                     Path.home() / ".claude/skills/_paper-review-core/personas.yaml"):
+            if base.is_file():
+                data = load_yaml(base) or {}
+                p = (data.get("personas") or {}).get(role)
+                if isinstance(p, dict):
+                    return {"stance": p.get("stance", ""), "goal": p.get("goal", ""),
+                            "non_goals": p.get("non_goals", "")}
+        return None
+
+    def _build_persona_prompt(self, message: str, options: list[str], persona: dict) -> str:
+        """오케스트레이터(Claude)가 전문 답변할 결정 프롬프트 조립(stdlib 문자열).
+        collusion-strip: 도메인=배경사실·정확도용, 정체성/관대 금지."""
+        opt = "\n".join(f"  - {o}" for o in options) if options else "  (free-text)"
+        terms = ", ".join(str(t) for t in (persona.get("terminology") or [])[:12])
+        rs = persona.get("role_stance") or {}
+        role_line = (f"[역할] {persona.get('role')} — {rs.get('stance','')}"
+                     if rs else f"[역할] {persona.get('role')} — 사용자 대리 저위험 결정(근거 명시).")
+        return (
+            "# HPA 저위험 결정 — 사용자 대리 전문 판단 요청\n"
+            "# collusion-strip: 아래 도메인은 배경 사실이며 정확한 판단에만 쓴다"
+            "(관대·정체성 금지). 확신 없으면 'ESCALATE_HUMAN' 반환.\n"
+            f"{role_line}\n"
+            f"[도메인 배경] {persona.get('domain')}: {str(persona.get('persona_seed',''))[:600]}\n"
+            f"[핵심 용어] {terms}\n"
+            f"[결정] {message}\n[선택지]\n{opt}\n"
+            "→ 최선의 선택지(또는 free-text) + 1줄 근거. 불확실/고위험 냄새면 ESCALATE_HUMAN."
+        )
+
     # ─── 카운터 (file-locked) ─────────────────────────────────
 
     def _get_state(self) -> dict:
@@ -242,6 +356,14 @@ class HumanProxyAgent:
         options = options or []
         context = context or {}
 
+        # ★ 안전 불변식(AC2): 고위험은 어떤 모드(NEVER 포함)에서도 사람 강제.
+        #   auto 경로(_auto_respond/_persona_pending)는 고위험에 코드-도달 불가(fail-closed).
+        if self._classify_risk(message, options, context) == "high":
+            self._log("high_risk_escalate", {"sender": sender,
+                      "message_preview": mask_secrets(message)[:120], "mode": self.mode})
+            return self._ask_human(message, sender, options, context, timeout,
+                                    reason=f"high-risk fail-closed (mode={self.mode})")
+
         # NEVER: 자동 응답
         if self.mode == "NEVER":
             return self._auto_respond(message, sender, options, context,
@@ -286,7 +408,7 @@ class HumanProxyAgent:
         )
         save_yaml_atomic(self.dirs["pending"] / f"{req_id}.yaml", request.to_dict())
         self._log("ask", {"request_id": req_id, "sender": sender,
-                          "message_preview": message[:120], "reason": reason})
+                          "message_preview": mask_secrets(message)[:120], "reason": reason})
 
         # 1) stdin 직접 호출 (CLI 모드, TTY 가 있을 때)
         # 2) 그렇지 않으면 응답 파일 polling
@@ -375,20 +497,48 @@ class HumanProxyAgent:
         context: dict,
         reason: str,
     ) -> HpaResponse:
-        """자동 정책 응답. 옵션 있으면 첫 번째, 없으면 'auto-allowed'."""
+        """저위험 자동 응답. 도메인 페르소나 있으면 전문 답변 경로(오케스트레이터+codex),
+        없으면 하위호환 fallback(options[0])."""
+        persona = self._resolve_persona(context)
+        if persona is not None:
+            return self._persona_pending(message, sender, options, context, persona, reason)
+        # 하위호환(AC7): 페르소나/도메인 부재 → 기존 기계적 기본값(저위험 한정)
         choice = options[0] if options else "auto-allowed"
         response = HpaResponse(
             request_id=self._new_request_id(),
             choice=choice,
-            decided_by=f"auto_{self.mode.lower()}",
+            decided_by=f"auto_{self.mode.lower()}_fallback",
             answered_at=now_iso(),
             elapsed_sec=0.0,
-            reason=reason,
+            reason=f"{reason}; no-persona fallback",
         )
-        self._log("auto", {"sender": sender, "choice": choice,
-                            "reason": reason,
-                            "message_preview": message[:120]})
+        self._log("auto_fallback", {"sender": sender, "choice": choice,
+                            "reason": reason, "message_preview": mask_secrets(message)[:120]})
         return response
+
+    def _persona_pending(self, message, sender, options, context, persona, reason):
+        """저위험+도메인: 결정 프롬프트 패키지 emit. 오케스트레이터(Claude)가 조합 페르소나로
+        전문 답변 → codex 검증 → `persona-answer` CLI 로 확정. 스크립트는 LLM 미호출(stdlib)."""
+        req_id = self._new_request_id()
+        prompt = self._build_persona_prompt(message, options, persona)
+        pp_dir = self.dirs["runtime"] / "hpa_persona_pending"
+        pp_dir.mkdir(parents=True, exist_ok=True)
+        # runtime 파일에 결정 컨텍스트 영속 → 저장 전 secret 마스킹(codex #9).
+        save_yaml_atomic(pp_dir / f"{req_id}.yaml", {
+            "id": req_id, "sender": sender,
+            "message": mask_secrets(message), "options": [mask_secrets(str(o)) for o in options],
+            "mode": self.mode, "domain": persona["domain"], "role": persona["role"],
+            "persona_prompt": mask_secrets(prompt), "created_at": now_iso(),
+            "requires": "orchestrator persona answer + codex verify → 'persona-answer' CLI",
+        })
+        self._log("persona_pending", {"request_id": req_id, "sender": sender,
+                  "domain": persona["domain"], "reason": reason})
+        return HpaResponse(
+            request_id=req_id, choice="(persona_pending)",
+            decided_by="auto_persona_pending", answered_at=now_iso(),
+            elapsed_sec=0.0,
+            reason=f"low-risk persona({persona['domain']}); {reason}",
+        )
 
     @staticmethod
     def _new_request_id() -> str:
@@ -426,10 +576,18 @@ def cmd_ask(args):
         human_input_mode=args.mode,
         max_consecutive_auto_reply=args.max_auto_reply,
     )
+    ctx = {}
+    if getattr(args, "domain", ""):
+        ctx["domain"] = args.domain
+    if getattr(args, "risk", ""):
+        ctx["risk"] = args.risk
+    if getattr(args, "role", ""):
+        ctx["role"] = args.role
     response = hpa.receive(
         message=args.message,
         sender=args.sender,
         options=args.options or [],
+        context=ctx,
         timeout=args.timeout,
     )
     # stdout 에 결과 (다른 스크립트 가 파싱)
@@ -479,6 +637,74 @@ def cmd_respond(args):
         pass
     sys.stdout.write(out + "\n")
     sys.stdout.flush()
+
+
+def cmd_persona_answer(args):
+    """오케스트레이터(Claude)가 저위험 persona_pending 에 codex-검증된 전문 답변 확정.
+    codex-verdict != pass 또는 ESCALATE_HUMAN → 사람 에스컬레이션(가짜 채택 금지, AC5)."""
+    dirs = get_runtime_dirs()
+    pp_path = dirs["runtime"] / "hpa_persona_pending" / f"{args.request_id}.yaml"
+    if not pp_path.exists():
+        sys.stderr.write(f"❌ persona_pending 없음: {args.request_id}\n"); sys.exit(1)
+    pkg = load_yaml(pp_path) or {}
+    verdict = (args.codex_verdict or "").lower()
+    escalate = (verdict != "pass") or (args.choice.strip().upper() == "ESCALATE_HUMAN")
+    if escalate:
+        # 사람 에스컬레이션: 일반 pending 생성 → 사람이 respond
+        save_yaml_atomic(dirs["pending"] / f"{args.request_id}.yaml", {
+            "id": args.request_id, "sender": pkg.get("sender", "persona"),
+            "message": pkg.get("message", ""), "options": pkg.get("options", []),
+            "mode": pkg.get("mode", "TERMINATE"), "worktree_id": "main",
+            "created_at": now_iso(), "status": "pending",
+            "context": {"escalated_from": "persona", "codex_verdict": verdict,
+                        "persona_choice": args.choice},
+        })
+        pp_path.unlink()
+        append_line_atomic(dirs["log"], json.dumps({
+            "ts": now_iso(), "event": "persona_escalate", "request_id": args.request_id,
+            "codex_verdict": verdict, "reason": "codex not pass or ESCALATE_HUMAN"},
+            ensure_ascii=False))
+        print(json.dumps({"status": "escalated_human", "request_id": args.request_id,
+                          "codex_verdict": verdict}, ensure_ascii=False))
+        return
+    # codex pass → 최종 확정(provenance 기록)
+    response = HpaResponse(
+        request_id=args.request_id, choice=args.choice, decided_by="auto_persona",
+        answered_at=now_iso(), elapsed_sec=0.0,
+        reason=f"persona({pkg.get('domain')}) + codex={verdict}")
+    save_yaml_atomic(dirs["responses"] / f"{args.request_id}.yaml", response.to_dict())
+    pp_path.unlink()
+    append_line_atomic(dirs["log"], json.dumps({
+        "ts": now_iso(), "event": "persona_answer", "request_id": args.request_id,
+        "domain": pkg.get("domain"), "choice": args.choice, "codex_verdict": verdict},
+        ensure_ascii=False))
+    print(json.dumps(response.to_dict(), ensure_ascii=False))
+
+
+def cmd_bridge(args):
+    """AskUserQuestion 다리 — pending 결정을 오케스트레이터(Claude)가 AskUserQuestion 으로
+    띄우기 좋은 최소형(id·message·options·sender)으로 출력. 흐름:
+      ① `human_proxy.py bridge` → pending 배열
+      ② Claude: 각 항목을 AskUserQuestion 으로 사용자에게 (options 그대로)
+      ③ Claude: 사용자 답 → `human_proxy.py respond <id> --choice <답>` 되먹임
+    스크립트는 AskUserQuestion 을 직접 못 부른다(Claude 도구) — 절차 배선이 다리다."""
+    dirs = get_runtime_dirs()
+    items = []
+    for f in sorted(dirs["pending"].glob("*.yaml")):
+        d = load_yaml(f) or {}
+        if not d:
+            continue
+        ctx = d.get("context", {}) or {}
+        items.append({
+            "id": d.get("id"),
+            "sender": d.get("sender"),
+            "message": d.get("message"),
+            "options": d.get("options") or [],
+            "escalated_from": ctx.get("escalated_from", ""),   # 'persona'=codex 실패 승격
+            "hint": "AskUserQuestion 으로 사용자에게 → respond <id> --choice <답>",
+        })
+    print(json.dumps({"pending_for_askuser": items, "count": len(items)},
+                     ensure_ascii=False, indent=2))
 
 
 def cmd_list_pending(args):
@@ -533,6 +759,9 @@ def main():
     ask.add_argument("--mode", choices=VALID_MODES, default="TERMINATE")
     ask.add_argument("--max-auto-reply", type=int, default=DEFAULT_MAX_AUTO_REPLY)
     ask.add_argument("--timeout", type=float, default=DEFAULT_TIMEOUT_SEC)
+    ask.add_argument("--domain", default="", help="저위험 페르소나 도메인(_domain-profiles/<name>)")
+    ask.add_argument("--risk", choices=["low", "high", ""], default="", help="위험 힌트(high=사람 강제)")
+    ask.add_argument("--role", default="decision-proxy")
     ask.set_defaults(func=cmd_ask)
 
     # respond
@@ -541,6 +770,18 @@ def main():
     resp.add_argument("--choice", required=True)
     resp.add_argument("--reason", default="")
     resp.set_defaults(func=cmd_respond)
+
+    # persona-answer (오케스트레이터가 codex-검증 페르소나 답변 확정)
+    pa = sub.add_parser("persona-answer", help="저위험 페르소나 답변 확정(codex 검증 후)")
+    pa.add_argument("request_id")
+    pa.add_argument("--choice", required=True)
+    pa.add_argument("--codex-verdict", required=True,
+                    choices=["pass", "fail", "unavailable"])
+    pa.set_defaults(func=cmd_persona_answer)
+
+    # bridge (AskUserQuestion 다리 — 오케스트레이터가 pending 을 승인 팝업으로)
+    br = sub.add_parser("bridge", help="pending 을 AskUserQuestion-ready 최소형으로 출력")
+    br.set_defaults(func=cmd_bridge)
 
     # list-pending
     lp = sub.add_parser("list-pending", help="대기 중인 요청 목록")

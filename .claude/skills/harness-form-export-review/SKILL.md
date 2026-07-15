@@ -28,6 +28,7 @@ allowed-tools:
 | render/openability | 파일 열림·렌더 가능(계획상 확인, 실제 실행은 사용자 승인) |
 
 ## 절차 (읽기 전용)
+> 📄 **openability·render 검증 = kordoc(MCP)**: `validate`(HWPX 구조·한컴독스 거부요인 사전차단)로 제출 가능성 확인 + `render --reflow`(→SVG, PNG 변환 후 Read 시각검증)로 레이아웃 점검. DOCX/HWP 내용 추출은 `_writing-core/document-extraction.md`. PDF=PyMuPDF.
 1. 대상 문서 Read(또는 구조 파싱 계획) → 위 항목별 점검.
 2. format_profile 대비 폰트·스타일 일치 확인.
 3. 각 항목 PASS/FAIL + 근거.

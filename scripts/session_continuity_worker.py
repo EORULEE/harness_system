@@ -87,18 +87,49 @@ def read_checkpoint(mem):
     except Exception:
         return None
 
+def newest_block(text):
+    """체크포인트는 최신 블록이 최상단(append-newest-at-top). 블록 경계 =
+    '<!-- 세션 체크포인트 ...' HTML 주석. 최상단(최신) 블록 텍스트만 반환.
+    → 옛 블록으로의 무음 fallthrough 차단(2026-07-15 block-drift 버그 수정).
+    - 마커 0개(구형 체크포인트) → 전체 텍스트(하위호환).
+    - 마커 1개 → 그 지점부터 끝까지.
+    """
+    if not text:
+        return text or ""
+    hits = [m.start() for m in re.finditer(r'(?m)^<!--\s*세션\s*체크포인트', text)]
+    if not hits:
+        # HTML 마커 없는 구형/외부 체크포인트: 블록 '선두' 헤더(작업 목표 | 현재 상태)를
+        # 2차 블록 경계로. 신형(작업 목표)·구형(현재 상태) 블록리더 모두 커버 (codex F4).
+        # ⚠️ 한계: 블록이 '## 완료' 같은 하위섹션으로 시작하는 malformed markerless 는
+        #    선두헤더가 없어 under-scope 가능(HTML 마커 사용 시 무관 — 실사용 경로).
+        hits = [m.start() for m in re.finditer(r'(?m)^##\s*(?:작업\s*목표|현재\s*상태)', text)]
+    if len(hits) >= 2:
+        return text[hits[0]:hits[1]]
+    if len(hits) == 1:
+        return text[hits[0]:]
+    return text
+
 def extract_from_checkpoint(ck):
-    """Heuristic VERBATIM 추출(추론 금지). 못 찾으면 빈 dict."""
+    """Heuristic VERBATIM 추출(추론 금지). 최신(최상단) 블록으로 스코프. 못 찾으면 빈 dict."""
     if not ck: return {}
-    t, out = ck["text"], {}
+    t, out = newest_block(ck["text"]), {}
     m = re.search(r'다음\s*첫\s*행동[^\n:：]*[:：]?\s*(.+)', t)
     if not m:
         m = re.search(r'(?:^|\n)[-*\s>]*다음\s*=\s*(.+)', t)
     if m: out["next_action"] = re.sub(r'[*`]', '', m.group(1)).strip()[:280]
-    m = re.search(r'##\s*작업\s*목표\s*\n+(.+)', t)
-    if not m:
-        m = re.search(r'##\s*현재\s*상태[^\n]*\n+>?\s*(.+)', t)
-    if m: out["current_objective"] = re.sub(r'[*>`]', '', m.group(1)).strip()[:280]
+    # 작업 목표: 날짜접미사 '(2026-..-x)' 소비 후 → (a) 인라인 목표('—'/'-'/':' 구분)
+    #   또는 (b) 다음 '비헤더' 줄(구형 줄바꿈 포맷). 개행이 헤더('##')·빈줄로 넘어가 오취하지 않게
+    #   수평공백([ \t])만 소비하고, 다음줄 캡처는 (?!#) 로 헤더 배제 (codex F1).
+    #   ⚠️ 다음줄 캡처는 '\n' 하나만(빈줄 넘지 않음) — 빈 목표섹션 뒤 무관 문단 오취 방지(codex 2차 NEW).
+    obj = None
+    m = re.search(r'##\s*작업\s*목표[ \t]*(?:\([^)]*\))?[ \t]*'
+                  r'(?:[—:\-][ \t]*(\S[^\n]*)|\n[ \t]*(?!#)(\S[^\n]*))', t)
+    if m:
+        obj = m.group(1) or m.group(2)
+    else:
+        m = re.search(r'##\s*현재\s*상태[^\n]*\n[ \t]*>?[ \t]*(?!#)(\S[^\n]*)', t)
+        if m: obj = m.group(1)
+    if obj: out["current_objective"] = re.sub(r'[*>`]', '', obj).strip()[:280]
     return out
 
 
@@ -110,6 +141,19 @@ MAX_BULLETS      = 10
 def _norm_label(s):
     return re.sub(r'\s+', ' ', re.sub(r'[*`#]', '', s)).strip().lower()
 
+def _label_base(header):
+    """헤더에서 날짜접미사/부가설명만 제거한 기본 라벨(정확일치용).
+    예: '완료 (2026-07-14-c)' → '완료' · '완료 (2026-07-14-a) — ★ r53 ...' → '완료'.
+    ⚠️ ASCII 하이픈/붙은 문자열은 분리하지 않음 — '완료-아님'·'locked-facts-to-review' 오매칭 방지(codex F5).
+    → 헤더 포맷이 날짜접미사로 진화해도 라벨 섹션을 인식(2026-07-15 block-drift 버그 수정)."""
+    n = _norm_label(header)
+    # (a) ' — 설명' / ' – 설명' / ': 설명' 분리 — 구분자는 반드시 공백으로 감싼 대시 또는 ': '
+    n = re.split(r'\s+[—–-]\s+|:\s', n, 1)[0].strip()
+    # (b) 끝의 '(날짜)' 접미사만 제거 — 반드시 YYYY-MM-DD 로 시작하는 괄호만.
+    #     ⚠️ '(아님)'·'(검토중)'·'(미정)' 같은 비날짜 괄호는 제거 안 함(오매칭 방지, codex r54 #4).
+    n = re.sub(r'\s*\(\s*\d{4}-\d{2}-\d{2}[^()]*\)\s*$', '', n).strip()
+    return n
+
 def extract_labeled_bullets(ck_text, labels):
     """`## <label>` 헤딩(라벨 정확 일치) 아래의 명시적 bullet(- / *)만 verbatim 추출.
     - 다른 문단/인라인/제목내 키워드에서 추론하지 않음(헤딩 텍스트가 label과 일치할 때만 capture).
@@ -118,7 +162,7 @@ def extract_labeled_bullets(ck_text, labels):
     for ln in ck_text.split("\n"):
         h = re.match(r'^##\s+(.*\S)\s*$', ln)
         if h:
-            if _norm_label(h.group(1)) in labels:
+            if _label_base(h.group(1)) in labels:
                 capturing = True
                 lbl = re.sub(r'[*`#]', '', h.group(1)).strip()
                 if lbl not in matched:
@@ -184,9 +228,10 @@ def build_state(event, mem, rt):
             datetime.datetime.fromtimestamp(ck["mtime"]).strftime("%Y-%m-%d %H:%M")
         d["source_checkpoint"] = os.path.basename(ck["path"])
         d["source_checkpoint_sha256"] = hashlib.sha256(ck["text"].encode("utf-8")).hexdigest()
-        # completed / locked_facts — 명시적 라벨 섹션 bullet verbatim (섹션 없으면 빈 배열)
-        comp, comp_tr, comp_lbl = extract_labeled_bullets(ck["text"], COMPLETED_LABELS)
-        lock, lock_tr, lock_lbl = extract_labeled_bullets(ck["text"], LOCKED_LABELS)
+        # completed / locked_facts — 최신 블록의 명시적 라벨 섹션 bullet verbatim (섹션 없으면 빈 배열)
+        _nb = newest_block(ck["text"])
+        comp, comp_tr, comp_lbl = extract_labeled_bullets(_nb, COMPLETED_LABELS)
+        lock, lock_tr, lock_lbl = extract_labeled_bullets(_nb, LOCKED_LABELS)
         d["completed"] = comp
         d["locked_facts"] = lock
         d["extracted_sections"] = comp_lbl + lock_lbl
@@ -196,6 +241,14 @@ def build_state(event, mem, rt):
         d["next_action"] = cfrom["next_action"]; d["confidence"] = "medium"
     if cfrom.get("current_objective"):
         d["current_objective"] = cfrom["current_objective"]
+    # 1-b) 관측성: checkpoint 는 있는데 구조 추출이 전무하면 파서 미스매치 의심 → needs_review
+    #      (정상 공백 블록 vs 포맷 드리프트 파싱 실패를 소비자가 구분 못 하는 문제 — codex F6)
+    if ck and not (d["completed"] or d["locked_facts"]
+                   or cfrom.get("current_objective") or cfrom.get("next_action")):
+        d["needs_review"] = True
+        d["open_loops"].append("checkpoint_present_but_no_structured_extract "
+                               "(format drift 의심 — 파서/헤더 포맷 확인)")
+        if d["status"] == "active": d["status"] = "needs_review"
     # 2) compact_summary (objective 보충)
     cs = event.get("compact_summary")
     if cs and not d["current_objective"]:

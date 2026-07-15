@@ -15,7 +15,7 @@ steps:
   - {id: 2, action: "ChatGPT 조사(gpt-5.5 + web_search)", uses: "multi_research.py orchestrate"}
   - {id: 3, action: "출처·DOI·URL·주장-근거 연결 검사(read-only verifier)", uses: "loop-verifier"}
   - {id: 4, action: "모델 교차반박(적대검증) → 살아남은 주장만 종합", uses: "multi-model-research"}
-  - {id: 5, action: "Wiki/vault 승격은 사용자 승인 후", uses: "obsidian/knowledge-promotion", when: "approved"}
+  - {id: 5, action: "조사 종료 시 **반자동 승격 게이트**: 'wiki/vault 로 승격할까요?' 1줄 확인(생략 금지) → 동의 시 harness-wiki-ingest(synthesis)+obsidian(literature) 실행", uses: "harness-wiki-ingest + obsidian"}
 budget: {agents: "3~5", synthesis_max: 2, repeat_fail_hold: 2}
 editable_paths: ["vault/notes/**", "vault/literature/**", "_output/loops/<loop_id>/**", ".claude/references/**"]
 human_gates: ["Wiki 정본 승격(사용자 승인 후)"]
@@ -24,6 +24,7 @@ success_conditions:
   - "모델당 ≥10, 중복제거 총 ≥25 출처(미달이면 명시)"
   - "주장 1개당 출처 URL 1개 + 실재검증(L4) 통과"
   - "충돌은 은폐하지 않고 합의/충돌/반박생존 정리"
+  - "종료 전 승격 게이트 수행: wiki ingest 완료 또는 사용자 거절/스킵 사유 명시(조용히 생략 = 위반, 2026-07-02 백필 재발방지)"
 hold_conditions:
   - "출처 미달 + 보충 불가 → 리포트에 명시(조용히 통과 금지)"
   - "한 모델 실패 → '미사용 사유' 명시"

@@ -535,14 +535,14 @@ def render_composite_agent_markdown(
         peer_section = (
             f"## 페어 연동\n"
             f"- 페어 상대: **x-{kind}** (🟢 Codex, Critical)\n"
-            f"- 호출 방식: `/codex:adversarial-review` 또는 `debate_manager` (토론 시)\n"
+            f"- 호출 방식: codex exec 적대검토(CLI 직접) 또는 `debate_manager` (토론 시)\n"
             f"- x-{kind} 가 이 결과물의 **약점·반례·놓친 엣지 케이스** 반환\n"
         )
     else:
         peer_section = (
             f"## 페어 연동\n"
             f"- 페어 상대: **c-{kind}** (🔵 Claude, Constructive)\n"
-            f"- 호출 방식: Claude Code 안에서 `/codex:adversarial-review` 슬래시 명령\n"
+            f"- 호출 방식: `codex exec --sandbox read-only`(적대검토 프롬프트, CLI 직접)\n"
             f"- **대안 설계를 내지 말 것** — c-{kind} 의 제안을 도전하는 것이 주 임무\n"
         )
 

@@ -23,6 +23,7 @@
 | "조사해줘", "최신 동향", "비교 정리"(광범위) | `research` | research | research workflow(multi-model) | executor-verifier |
 | "이거 사실이야?", "버전 맞아?"(단발) | `fact-check` | fact-check | claude-main | one-shot |
 | "다듬어줘", "보고서 써줘", "polish" | `writing` | writing | writing-suite | deterministic-only + human-gated(중요주장) |
+| "논문/보고서 **캠페인** 시작", "특허 **명세서 작성** 시작" | `writing-campaign` | writing-campaign | writing-suite+ledger (Phase0-4, 정본=docs/writing-campaign-workflow-v2.md) | deterministic+human-gated+cross-model |
 | "학습률 3개 비교", "A/B 실험" | `experiment` | experiment | experiment-tracking → Mode C | deterministic-only + human-gated |
 | "이 HWP/DOCX/HTML 양식 맞춰줘" | `document-form` | document-form | form-export-review | deterministic-only + human-gated |
 | "이 PPT 디자인 개선해줘" | `claude-design` | claude-design | claude-design bridge | deterministic-only + human-gated |

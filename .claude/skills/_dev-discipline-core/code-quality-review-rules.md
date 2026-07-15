@@ -16,7 +16,7 @@
   - Critical = 즉시 fix · Important = 진행 전 fix · Minor = 기록 후 나중. 기술 근거 있으면 pushback 허용.
 
 ## codex 우선 (충돌 방지)
-- **코드 적대검토 primary = `/codex:adversarial-review`(ChatGPT gpt-5.5)** — 교차모델 비대칭([[reference-codex-chatgpt-blocked]]·[[feedback-codex-2pass-deploy]]).
+- **코드 적대검토 primary = `codex exec` 적대검토(CLI 직접, gpt-5.6-sol — 플러그인 제거 2026-07-13)** — 교차모델 비대칭([[reference-codex-chatgpt-blocked]]·[[feedback-codex-2pass-deploy]]).
 - 본 규율은 codex 호출의 **차원·severity 프레이밍을 표준화**. 동일모델(Claude) 서브에이전트 리뷰는 codex 보조로만(상관오류 주의).
 
 ## 경계

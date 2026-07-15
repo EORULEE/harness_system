@@ -13,7 +13,7 @@
 - 고정 계약 1개: statfs.magic_family ⊬ mount.fstype (M1). 이 helper 는 kernel mount table 만 사용.
 
 사용:
-  measure.py mount    --path /data [--host server-a]
+  measure.py mount    --path /storage1 [--host server-a]
   measure.py identity [--host server-a]
   measure.py import   --module torch [--host server-a] [--python /usr/bin/python3]
 출력: receipt JSON(stdout) + .claude/runtime/vgate/receipts.jsonl append.

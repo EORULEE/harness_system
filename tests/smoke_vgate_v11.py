@@ -273,7 +273,7 @@ def trip(cmd):
                        input=json.dumps({"tool_name": "Bash", "tool_input": {"command": cmd}}),
                        capture_output=True, text=True)
     return "ask" in p.stdout
-ck("AC-5.1 rm -rf 절대경로 → ask", trip("rm -rf /data/x"))
+ck("AC-5.1 rm -rf 절대경로 → ask", trip("rm -rf /storage1/x"))
 ck("AC-5.2 원격 destructive → ask", trip("ssh h systemctl restart svc"))
 ck("AC-5.3 /tmp 삭제 침묵(FP)", not trip("rm -rf /tmp/x"))
 ck("AC-5.4 일반 명령 침묵", not trip("ls -la && python3 t.py"))

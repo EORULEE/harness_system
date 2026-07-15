@@ -1,5 +1,6 @@
 ---
 name: harness-report-writer
+persona: report-writer   # 역할 페르소나 정본 = _paper-review-core/personas.yaml (조합 = persona-composition.md)
 description: "기술·과제·정책·기관 보고서 초안을 작성한다(draft only). executive summary/background/data/method/results/implications/limitations/future work 지원. 의사결정자용 요약과 기술 세부를 분리. HWP/DOCX export용 문단 구조는 고려하되 양식 적용은 하지 않는다. writer 정책은 model-policy.yaml role 참조. 명시 호출 전용."
 disable-model-invocation: true
 argument-hint: "<report 유형 + domain_profile + 자료>"
@@ -24,6 +25,7 @@ executive summary · background · data · method · results · implications · 
 - 초안 = **primary_writer**, 검증 = **orchestrator**, 적대검토 = **adversarial_reviewer** (전부 `model-policy.yaml` 해석). 모델명 하드코딩 금지.
 
 ## 절차
+> 📄 **참조 문서 읽기 = kordoc(MCP) 추출**(DOCX·HWP·HWPX; PDF=PyMuPDF). **HWPX 산출 시 kordoc `generate`** 사용 가능하나 **조건부**: 수식 없는 일반 보고서·공문서만(실측: 텍스트·표·한글 정확·구조검증 통과, **수식은 미조판**). 수식·정밀 booktabs 양식은 한컴/pyhwpx 후처리. **DOCX 생성은 python-docx 유지**(kordoc write 불가). 정본 `_writing-core/document-extraction.md`.
 1. contract(`_writing-core/writing-contract-schema.yaml` 형식, document_type=report) + domain_profile 참조.
 2. 구조별 초안 구성 → claim-evidence table 동반([[claim-evidence-rules]]).
 3. limitations·future work 보존(낙관 편향 금지).

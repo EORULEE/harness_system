@@ -1,5 +1,6 @@
 ---
 name: harness-slide-writer
+persona: slide-writer   # 역할 페르소나 정본 = _paper-review-core/personas.yaml (조합 = persona-composition.md)
 description: "발표자료 outline/speaker notes 보조 skill. 5/10/15/30분 발표 구조로 slide title·key message·3~5 bullets·speaker notes·figure/table suggestion·Q&A 예상질문을 산출한다. 실제 PPT/PPTX 생성은 하지 않는다(outline only). 수치·인용·그림 의미 불변. 명시 호출 전용."
 disable-model-invocation: true
 argument-hint: "<발표 길이(5/10/15/30분) / domain_profile / 자료 또는 file_path>"
@@ -36,6 +37,7 @@ allowed-tools:
 - 필요 시 hwp/docx/html 양식 workflow와 **분리**(본 스킬은 발표 텍스트 개요만, 양식 적용은 format skill).
 
 ## 출력 (outline only)
+> 📄 **참조 문서 읽기 = kordoc(MCP) 추출**(DOCX·HWP·HWPX; PDF=PyMuPDF). HWPX 산출 시 kordoc `generate`는 **수식 없는 경우만 — 수식은 LaTeX 텍스트로 남고 미조판**(한컴 후처리 필요). 정밀양식도 한컴 후처리. 정본 `_writing-core/document-extraction.md`.
 - 발표 outline(슬라이드별 title/message/bullets/notes/figure suggestion) + Q&A 예상 + [확인 필요].
 - **발표자료 작성 후 `harness-claim-evidence-audit` 권장**(수치·인용 근거 확인).
 - 실제 Write/파일 생성 금지 — 응답 개요.

@@ -21,6 +21,7 @@
 폴백과 **일치해야** 한다. smoke(Phase C)는 둘을 **정적 대조**한다(실제 호출 없음, AC20).
 - 체인 단계: primary → (한도초과) flash 폴백 → (백오프) → (Gemini 완전실패) ChatGPT 폴백.
 - ChatGPT 호출 경로: codex 플러그인 app-server 우선 → bare codex exec.
+- ⚠️ **조용한 폴백 주의(2026-06-10)**: write.py 폴백은 *조용**해서 출력만으론 실제 사용 모델을 모름. **특정 모델이 실제로 쓰였는지 보장**해야 할 때(예: 사용자가 3.1-pro 명시)는 **검증 호출 `~/.claude/lib/gemini_call.py --model <m>`** 사용 — 응답 `modelVersion` 검증, 불일치 시 조용한 대체 없이 exit 2 + `[VERIFIED] model/tokens/tier` 실측. (cap 상향됨: gemini-3.1-pro-preview tier=standard 접근 가능, 2026-06-10 확인.) 참조 [[reference-gemini-key-usage]].
 
 ## 4. unavailable 판정 (누가)
 - **런타임 판정**은 백엔드(write.py) 책임 — 429/503/예외로 감지(본 suite는 백엔드 미수정).

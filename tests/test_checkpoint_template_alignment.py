@@ -25,10 +25,22 @@ chk(any("작업 목표" in l for l in labels), "템플릿 `## 작업 목표`(obj
 chk(any("다음 첫 행동" in l for l in labels), "템플릿 `## 다음 첫 행동`(next_action parser 라벨)")
 
 # --- 2) 템플릿 골격으로 만든 체크포인트가 실제로 추출되는지(end-to-end) ---
-sample = ("## 작업 목표\n보고서 작성\n"
-          "## 다음 첫 행동: 목차 4 작성\n"
-          "## 완료\n- 목차 1 작성\n- 목차 2 작성\n"
-          "## 고정 사실\n- 언어 한국어\n- 총 5개\n"
+# 2026-07-13 canary fix: sample 헤딩을 하드코딩하지 않고 **실제 템플릿에서 파생** —
+# 템플릿 라벨이 바뀌면(드리프트) 이 e2e가 즉시 깨진다. 템플릿 부재 시에만 골격 fallback.
+def _tpl_heading(key, fallback):
+    for s in re.findall(r'^(##\s+.*\S)\s*$', t, re.M):
+        if key in s:
+            return s
+    return fallback
+H_OBJ  = _tpl_heading("작업 목표", "## 작업 목표")
+H_NEXT = _tpl_heading("다음 첫 행동", "## 다음 첫 행동")
+H_COMP = _tpl_heading("완료", "## 완료")
+H_LOCK = _tpl_heading("고정 사실", "## 고정 사실")
+H_NEXT = H_NEXT.split(":")[0].rstrip()  # 템플릿의 '## 다음 첫 행동: ...' 꼬리 제거
+sample = (f"{H_OBJ}\n보고서 작성\n"
+          f"{H_NEXT}: 목차 4 작성\n"
+          f"{H_COMP}\n- 목차 1 작성\n- 목차 2 작성\n"
+          f"{H_LOCK}\n- 언어 한국어\n- 총 5개\n"
           "## 변경 파일\n- scripts/x.py\n")
 o = extract_from_checkpoint({"text": sample})
 chk(o.get("current_objective") == "보고서 작성", "objective 추출 정확")

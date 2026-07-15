@@ -1,5 +1,6 @@
 ---
 name: harness-patent-assist
+persona: patent-assist   # 역할 페르소나 정본 = _paper-review-core/personas.yaml (조합 = persona-composition.md)
 description: "특허/발명신고서 보조 skill (법률자문 아님). 기술 설명·발명신고서 구조·claim 초안 후보·claim-risk review를 draft/risk table로만 산출한다. 등록가능성·침해·신규성/진보성 법률 판단은 하지 않으며 '변리사/전문가 검토 필요'를 반드시 표시한다. 직접 수정 안 함. 명시 호출 전용."
 disable-model-invocation: true
 argument-hint: "<document_type=patent / domain_profile / 발명 설명 또는 file_path>"
@@ -22,6 +23,7 @@ allowed-tools:
 - `patent-engineering` 또는 관련 **domain profile**(`_domain-profiles/<name>/`) 참조 — 기술분야 용어·표기 보호용. 없으면 custom-template 기반 초안 제안만(자동 적용 금지).
 
 ## 지원 항목 (구조 보조)
+> 📄 **참조 기술문서·선행 명세가 DOCX·HWP·HWPX면 kordoc(MCP) 추출**(수식·병합표 보존). PDF=PyMuPDF 비전. 정본 `_writing-core/document-extraction.md`.
 technical field · background · problem to be solved · solution · advantageous effects · embodiments · drawing descriptions · **claim draft candidate** · **claim-risk review**.
 
 ## ⛔ 금지 (단정·왜곡)

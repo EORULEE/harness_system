@@ -10,6 +10,7 @@
 ## Layer 1 — serena-first (읽기를 싸게)
 코드-동작/값-의미를 주장하기 전, 그 값을 **생산하는 심볼로 점프**해 전체 파일을 안 읽고도 결정적 라인을 본다.
 - `mcp__serena__find_symbol`(정의)·`find_referencing_symbols`(사용처)·`get_symbols_overview`(파일 구조)로 **생산 함수**를 직접 연다. grep→Read offset 도 가능.
+- ⚠️ **Serena 사각지대 → grep 안전망 필수**(교체 아님, 병행): `find_referencing_symbols`는 **정적 파이썬 호출자만** 본다. **교차언어**(`hooks/*.mjs`가 shell로 부르는 `scripts/*.py`·`settings.json` 훅배선·`.yaml` recipe·`python3 x.py` 실행)·**동적 디스패치**(`getattr`·registry·문자열 키·decorator rename)·문자열/설정값은 **0 caller 로 오판**한다(예: `session_logger.cmd_stop_guard`는 `hooks/stop.mjs`가 호출 → Serena 사용처 0인데 실제론 stop-guard 진입점). ⇒ "누가 부르나/미사용인가/영향범위"는 Serena 후 **`grep -rn`으로 `.mjs`·`.json`·`.yaml`·문자열까지 교차확인**한 뒤에만 단정. LSP 캐시 staleness(`.serena/cache/`)·비-`.py`(md/yaml=심볼 없음)도 주의.
 - **컨테이너 ≠ 측정**: 잘라낸 영역(crop)·래스터 전체 valid·배열 shape 는 *처리 컨테이너*일 뿐, 실제 산출이 쓰는 **마스크/부분집합/필터/평균 대상**과 다르다. "valid 100%" ≠ "전체가 대상".
 - 못 열었으면 추론으로 채우지 말고 "확실치 않음".
 
@@ -26,7 +27,7 @@ python3 scripts/code_claim_lint.py <draft.md|->        # flagged 있으면 exit 
 heuristic 보조기(완전 탐지 아님) — flag 0 이 "검증 완료" 보증은 아니다. **flag 가 있으면 반드시 처리**, 없어도 핵심 주장은 육안 재검토.
 
 ## Layer 3 — cross-model 독립 검증 (고위험 옵트인, 본 파일럿 범위 밖)
-correctness-critical 주장만: x-에이전트/Codex 에게 *유일 임무 = "그 값을 생산하는 함수를 직접 열어 읽고 주장을 반박하라"*. 다른 모델 = 다른 블라인드. 비용 때문에 결정적 주장에만. (files_origin 파일럿은 1·2층; 3층은 `/codex:adversarial-review` 명시 호출로.)
+correctness-critical 주장만: x-에이전트/Codex 에게 *유일 임무 = "그 값을 생산하는 함수를 직접 열어 읽고 주장을 반박하라"*. 다른 모델 = 다른 블라인드. 비용 때문에 결정적 주장에만. (files_origin 파일럿은 1·2층; 3층은 codex exec 적대검토(CLI) 명시 호출로.)
 
 ## 경계
 advisory(stop-guard·hookify 하위). 적용 = `dev-discipline-trigger-policy.md` 의 code-analysis 트리거. 단순 질문·prose·번역엔 적용 0.

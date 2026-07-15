@@ -28,7 +28,7 @@
 §2(완료 주장)의 형제. 코드 동작·값 의미를 주장하기 전 **그 값을 생산하는 함수**를 serena(`find_symbol`)/Read 로 열어 결정적 라인(`file:line`)을 **원문 인용 후 해석**(글로벌 §3).
 - **컨테이너 ≠ 측정**: crop·배열 shape·valid% 는 처리 컨테이너일 뿐, 산출이 쓰는 **마스크/부분집합/평균 대상**과 다르다("valid 100%"≠"전체가 대상").
 - 전송 직전 `python3 scripts/code_claim_lint.py <draft|->` 로 자기 draft self-check(인용 없는 동작 주장 surface → 읽고 인용 or "확실치 않음" 강등). heuristic 보조기(flag 0 ≠ 검증완료).
-- 정본 [[code-claim-evidence-rules]]·[[feedback_read_producing_function]]. (고위험은 Layer 3 cross-model `/codex:adversarial-review` 옵트인.)
+- 정본 [[code-claim-evidence-rules]]·[[feedback_read_producing_function]]. (고위험은 Layer 3 cross-model codex exec 적대검토(CLI) 옵트인.)
 
 ## 3. Mode B Code-change TDD (코드/스크립트 변경)
 **적용 조건**(전부 충족 시): ① 검증 가능한 동작 변경 ② 회귀 위험 있음 ③ DL **본학습이 아님**(DL은 §6 carve-out).
@@ -53,7 +53,7 @@
 
 ## 부록 — 트리거별 추가 규율(요약 링크)
 - HWP/DOCX 자동화: COM·렌더 육안검증 [[reference_hwp_editing]] · 한컴 interop 주의 [[feedback_hancom_interop_caution]].
-- 멀티머신 배포: md5 일치·`.bak` 백업·idempotent · **<machine> 배포동결** [[feedback_<machine>_deploy_freeze]].
+- 멀티머신 배포: md5 일치·`.bak` 백업·idempotent · **server-a 배포동결** [[feedback_server-a_deploy_freeze]].
 - DL 학습 전: smoke/checklist/log 저장·본학습 승인 [[feedback_dl_workflow]] (§6 = smoke-as-test).
 - settings/hookify/stop-guard 작업: `.bak`·JSON 유효·규칙 테스트·권위 불가침.
 - secret: 출력 전 `scripts/secret_masking.py`로 마스킹, residual 0 확인.

@@ -93,7 +93,7 @@ TRIGGERS = [
     "token_budget_warning",
     "token_budget_exceeded",
     "convergence_detected",   # v2.4.2: 연속 PASS로 수렴 감지
-    "codex_rescue_overuse",   # v2.4.3: 세션 내 /codex:rescue 한도 초과
+    "codex_rescue_overuse",   # v2.4.3: 세션 내 (구 플러그인) codex:rescue 한도 초과 — 계측 키 보존
 ]
 
 DEFAULT_CONFIG = {
@@ -102,11 +102,11 @@ DEFAULT_CONFIG = {
         "convergence_threshold": 2,
         "token_budget_warning": 50000,
         "token_budget_hard_limit": 100000,
-        # v2.4.3 — /codex:rescue 사용 한도 (상태 기반 제한)
+        # v2.4.3 — (구 플러그인) codex:rescue 사용 한도 — 플러그인 제거(2026-07-13) 후 count=0 무해, 계측 로직 보존
         # rescue는 "Claude와 같은 일을 독립적으로 시키는" 모드라 상관된 오류를
         # 낳을 수 있고, 공식 README도 장시간 사용 시 사용량 급증 경고.
         # 기본 비대칭 구조(Claude=Constructive, Codex=Critical)에서는
-        # 대부분 /codex:adversarial-review 로 대체되어야 하고,
+        # 대부분 codex exec 적대검토(CLI)로 대체되어야 하고,
         # rescue는 "정말 독립된 경로"가 필요한 경우에만 허용된다.
         "codex_rescue_per_session": 3,       # 세션당 hard 상한
         "codex_rescue_warning_at": 2,        # 경고 임계
@@ -607,7 +607,7 @@ def detect_triggers(state: dict, cfg: dict) -> list[dict]:
     if rescue_count >= rescue_hard:
         triggers.append({"type": "codex_rescue_overuse", "count": rescue_count, "limit": rescue_hard, "mentions": rescue_mentions})
     elif rescue_count >= rescue_warn:
-        sys.stderr.write(f"ℹ️  /codex:rescue actual {rescue_count}/{rescue_hard}회 사용됨 (mentions={rescue_mentions}). 가급적 adversarial-review로 전환.\n")
+        sys.stderr.write(f"ℹ️  (구 플러그인) codex:rescue actual {rescue_count}/{rescue_hard}회 사용됨 (mentions={rescue_mentions}). 가급적 codex exec 적대검토(CLI)로 전환.\n")
 
     tracking = state.get("tracking", {})
     if tracking.get("skipped_missing_transcript", 0) or tracking.get("skipped_unreadable_transcript", 0):

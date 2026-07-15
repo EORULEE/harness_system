@@ -19,7 +19,7 @@ steps:
 budget: {max_iterations: 3, max_minutes: 30, repeat_fail_hold: 2}   # Ralph circuit_breaker ≤5
 editable_paths: ["<기능 관련 src/** + tests/**>"]
 human_gates: ["deep-interview 명세계약 승인(구현·커밋 전)"]
-cross_model: "보안·아키텍처·대규모 수정 시 /codex:adversarial-review 추가(human-gated 동반)"
+cross_model: "보안·아키텍처·대규모 수정 시 codex exec 적대검토(CLI) 추가(human-gated 동반)"
 success_conditions:
   - "deep-interview 수용기준 전부 충족(Ralph fresh evidence)"
   - "기존 테스트 회귀 0"

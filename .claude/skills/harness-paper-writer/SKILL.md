@@ -23,6 +23,7 @@ title · abstract · introduction · related work · methods · results · discu
 - ⚠️ 본 SKILL.md에 모델명·벤더명을 적지 않는다. 정책 변경은 `model-policy.yaml`에서.
 
 ## 절차 (읽기 전용 + 초안 산출)
+> 📄 **기존 원고·참조 문헌이 DOCX·HWP·HWPX면 kordoc(MCP) 추출**(이어쓰기·개정 시; 수식 LaTeX·병합표 보존). PDF=PyMuPDF 비전. **DOCX 초안 산출은 python-docx 유지**(kordoc write 불가). **HWPX 산출 시 kordoc generate는 수식 없는 경우만 — 수식은 LaTeX 텍스트로 남고 미조판(한컴 후처리 필요)**. 정본 `_writing-core/document-extraction.md`.
 1. `harness-writing-planner`의 contract(`_writing-core/writing-contract-schema.yaml` 형식, document_type=paper) + domain_profile 참조.
 2. 섹션별 페르소나 시드(domain_profile `persona_seed`) → 초안 구성안.
 3. 초안 + **claim-evidence table** 동반 출력([[claim-evidence-rules]]): 주장 | 근거유형 | 출처 | 상태.

@@ -40,7 +40,7 @@ if (!m) {
   if (!SUPPRESS.test(p) && JUDGE.test(p)) {
     const soft =
       `\n[mode-label · advisory] 이 요청은 도메인 판정·디버깅 = A1(2-pass 대상)일 수 있음 — ` +
-      `**단독 결론 금지 방향**: 🔵 c측 + 🟢 x측을 **에이전트로 병행 분기**(이 프로젝트 x측이 Codex면 \`codex:adversarial-review\`)해 교차. ` +
+      `**단독 결론 금지 방향**: 🔵 c측 + 🟢 x측을 **에이전트로 병행 분기**(이 프로젝트 x측이 Codex면 codex exec 적대검토 — CLI 직접)해 교차. ` +
       `명시하려면 맨 앞에 \`A1:\`. 강제 아님·최종권위=stop-guard/hookify.\n`;
     process.stdout.write(JSON.stringify({
       hookSpecificOutput: { hookEventName: "UserPromptSubmit", additionalContext: soft },
@@ -57,13 +57,15 @@ const MODES = {
   A1:
     `\n[mode A1 · advisory] 분석·판단·설계·디버깅·문서검토 = **2-pass 의무 + 에이전트 병행 분기가 기본**(단독 답변은 예외). ` +
     `🔵 c측(constructive) + 🟢 x측(반례·약점 탐색)을 **서브에이전트로 병행 스폰** — 이 프로젝트 x측이 Codex면 ` +
-    `\`codex:adversarial-review\`/\`codex:review\`, Claude c-/x- 페어면 Task 병행 분기. 다도메인이면 관련 페어 여러 개(예: 4페어). ` +
+    `codex exec 적대검토/리뷰(CLI 직접), Claude c-/x- 페어면 Task 병행 분기. 다도메인이면 관련 페어 여러 개(예: 4페어). ` +
     `**결론/판정을 내리기 전에 반례부터 탐색**(특히 도메인 물리·모델 방법론·데이터 아티팩트 판정). ` +
-    `페어 없으면 read-only 검증 에이전트(Explore) 1개라도 교차. 최소 2회 수렴(1회 종결은 3조건 충족 시만).\n`,
+    `페어 없으면 read-only 검증 에이전트(Explore) 1개라도 교차. 최소 2회 수렴(1회 종결은 3조건 충족 시만). ` +
+    `⚠️ c-/x-는 둘 다 Claude(같은 모델)=상관오류 — **교차검증 수렴 주장 시 codex(다른 모델) x측 필수**: ` +
+    `가용성은 \`python3 scripts/codex_probe.py\` 실측('불확실' 금지), 가용이면 codex exec 적대검토(CLI, gate_codex_review.py 권장) 수행, 미가용이면 메타에 'codex 미가용(사유)' 명시.\n`,
   B:
     `\n[mode B · advisory] 구현 3단계 체인 — **각 단계에 에이전트 교차를 기본 적용**(사소한 기계편집만 예외): ` +
     `① 진행 전 **명세 게이트(deep-interview) 또는 '바로 진행' 1줄 확인** — 나온 수용기준은 **x측 에이전트로 적대 챌린지 권장** ` +
-    `② 구현은 **DEV 규율**: TDD(실패테스트→최소구현→green)·systematic-debugging(증상→재현→근본원인). 구현 후 **코드 리뷰를 x측 에이전트/Codex(\`codex:review\`)로 교차 권장** ` +
+    `② 구현은 **DEV 규율**: TDD(실패테스트→최소구현→green)·systematic-debugging(증상→재현→근본원인). 구현 후 **코드 리뷰를 x측 에이전트/Codex(codex exec CLI)로 교차 권장** ` +
     `③ 완료 주장은 fresh evidence 1개=주장 1개(**Ralph**) + **read-only verifier 에이전트(Explore)로 독립 재확인 권장**. 승인 전 커밋·배포 금지.\n`,
   C:
     `\n[mode C · advisory] 자율 실험 루프 — \`.claude/cycle.<proj>.yaml\` 인프라 필요(없으면 미적용 → A1/B로 처리). ` +

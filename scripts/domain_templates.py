@@ -529,7 +529,7 @@ model: inherit
 
 ## 페어 연동
 - 페어 상대: **x-{kind}** (🟢 Codex, Critical)
-- 호출 방식: Claude Code 안에서 `/codex:adversarial-review` 슬래시 명령 (공식 플러그인)
+- 호출 방식: `codex exec` 적대검토(CLI 직접 — 플러그인 제거 2026-07-13)
 - x-{kind}가 이 결과물의 **약점·반례·놓친 엣지 케이스**를 반환
 
 ## 프로젝트 맥락
@@ -579,65 +579,37 @@ model: inherit
 c-{kind}가 쓴 수치가 다음 용어와 맥락이 일치하는지 확인:
 {terms_md}
 
-## 실행 방법 (v2.4.5-hardened 하이브리드)
+## 실행 방법 (CLI 직접 — 플러그인 제거 2026-07-13)
 
-이 에이전트는 **공식 Claude Code 플러그인** (`openai/codex-plugin-cc`) 의 슬래시 명령을
-우선 사용한다. 공식 플러그인이 이미 `/codex:adversarial-review` 를 제공하므로 커스텀 헬퍼 불필요.
+이 에이전트는 **codex CLI 직접 호출**을 사용한다 (openai-codex 플러그인 제거됨).
+기본 모델 = `~/.codex/config.toml` pin (gpt-5.6-sol).
 
-### 기본: 공식 플러그인 사용
-
-Claude Code 세션 안에서 바로 슬래시 명령 호출:
+### 기본: codex exec 적대검토
 
 ```
-/codex:adversarial-review challenge the assumptions and failure modes of [c-{kind} 결과]
+codex exec --sandbox read-only --skip-git-repo-check "challenge the assumptions and failure modes of [c-{kind} 결과]"
 ```
 
-옵션:
-- `--base <ref>` : 특정 브랜치 대비 리뷰
-- `--background` : 장시간 리뷰는 백그라운드로 (권장)
-- `--wait` : 완료까지 대기
+- 반드시 timeout 동반 (cold-start hang 리스크) · read-only sandbox 고정.
+- 파일 allowlist·secret 마스킹·재시도 캡이 필요한 게이트 검토는 `scripts/gate_codex_review.py` 사용.
+- 장시간 리뷰는 Bash run_in_background 로 실행.
 
-긴 리뷰는 백그라운드 + status 체크 조합:
-```
-/codex:adversarial-review --background
-/codex:status
-/codex:result
-```
-
-### 코드 자체 리뷰 (품질·보안·성능)
+### 완전 독립 분석 (드문 경우)
 
 ```
-/codex:review
-/codex:review --base main
-/codex:review --background
+codex exec --skip-git-repo-check "investigate why the integration test is flaky"
 ```
 
-### 완전 독립 분석 (rescue — 드문 경우)
+> ⚠️ 세션당 **3회 제한** 권고 (circuit_breaker). 남용 시 상관 오류 위험.
 
-```
-/codex:rescue investigate why the integration test is flaky
-```
+### Codex CLI 미설치·미인증 시
 
-> ⚠️ `/codex:rescue` 는 세션당 **3회 제한** (circuit_breaker). 남용 시 상관 오류 위험.
-
-### 공식 플러그인 설치 확인
-
-Claude Code 첫 사용 시:
-```
-/plugin marketplace add openai/codex-plugin-cc
-/plugin install codex@openai-codex
-/reload-plugins
-/codex:setup
-```
-
-### 공식 플러그인 미설치·Codex 미구독 시
-
-slash 명령이 없거나 Codex 인증이 없다면 x-{kind}는 **Claude 기반 self-review**로 fallback한다
+`codex --version`/`codex login status` 실패 시 x-{kind}는 **Claude 기반 self-review**로 fallback한다
 (같은 모델이 양쪽을 담당 → 상관 오류 증가 주의).
 
 ## 페어 연동
 - 페어 상대: **c-{kind}** (🔵 Claude, Constructive)
-- 호출 순서: c-{kind} 1차 결과 → `/codex:adversarial-review` → Codex findings → 메인 Claude가 통합
+- 호출 순서: c-{kind} 1차 결과 → codex exec 적대검토(CLI) → Codex findings → 메인 Claude가 통합
 
 ## 프로젝트 맥락
 프로젝트: **{project_name}**
@@ -719,7 +691,7 @@ model: inherit
 
 ## 페어 연동
 - 페어 상대: **x-{kind}** (🟢 Codex)
-- 기본 커맨드: `/codex:adversarial-review`
+- 기본 커맨드: `codex exec --sandbox read-only`(적대검토 프롬프트)
 
 ## 프로젝트 맥락
 프로젝트: **{project_name}**

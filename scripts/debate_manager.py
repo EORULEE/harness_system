@@ -1,7 +1,7 @@
 """debate_manager.py — Claude ↔ Codex 다턴 토론 엔진 (v2.5.0+).
 
 목적:
-- 기존 v2.4.7 의 1 회 교환 (c- → /codex:adversarial-review → x-) 한계 극복.
+- 기존 v2.4.7 의 1 회 교환 (c- → codex 적대검토(CLI) → x-) 한계 극복.
 - 양측이 서로 반박·재반박·합의 형성까지 여러 턴 주고받음.
 
 핵심 설계:
@@ -21,7 +21,7 @@
 
 의존성:
 - Task 도구 (Claude 측 응답) — 실제 호출은 Claude Code 내에서
-- /codex:rescue 슬래시 명령 (Codex 측 응답)
+- codex exec 직접 호출 (Codex 측 응답)
 - 이 모듈은 **프로토콜 레이어** 만 담당. 실제 LLM 호출은 외부 integration.
 """
 from __future__ import annotations
@@ -116,7 +116,7 @@ class DebateManager:
 
         for _ in range(session.max_turns):
             c_resp = some_claude_call(session)  # Task(c-proposer, ...)
-            x_resp = some_codex_call(session)   # /codex:rescue ...
+            x_resp = some_codex_call(session)   # codex exec ...
             dm.record_turn(session, c_resp, x_resp)
             if dm.check_convergence(session):
                 break

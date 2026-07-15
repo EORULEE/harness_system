@@ -32,7 +32,9 @@ allowed-tools:
 ## 분류 규칙 (요청 키워드 → skill 체인)
 | 신호(키워드) | skill 체인 |
 |---|---|
-| 리뷰어 답변·reviewer response·response letter·revision response | `harness-claim-evidence-audit` → `harness-writing-polish` |
+| 리뷰어 답변·리뷰어 대응·reviewer response·response letter·revision response | `harness-reviewer-response` (→ 문체 다듬기 시 `harness-writing-polish`) |
+| 셀프리뷰·모의심사·투고 전 검토·self review·pre-submission review | `harness-paper-self-review` |
+| 심사서·피어리뷰·논문 심사·peer review·review report | `harness-paper-peer-review` |
 | 논문·paper·manuscript·abstract·introduction·discussion·conclusion | `harness-writing-planner` 또는 `harness-paper-writer` |
 | 보고서·report·성과요약·executive summary | `harness-writing-planner` 또는 `harness-report-writer` |
 | 특허·발명신고서·claim·청구항 | `harness-writing-planner` → `harness-patent-assist` |

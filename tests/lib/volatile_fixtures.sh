@@ -24,7 +24,7 @@ regen_volatile_fixtures() {
   # payload.prompt 에 secret-bait 포함(T55: collector 가 prompt/secret 을 미수집하는지 검증) → 런타임 결합.
   local d="$fx/proj-observed/.claude/runtime"
   mkdir -p "$d" || return 1
-  local key="EXAMPLE_API_""KEY"             # 런타임 결합 → 가짜 키 이름 (소스 분할)
+  local key="ZOTERO_API_""KEY"             # 런타임 결합 → 가짜 키 이름 (소스 분할)
   local val="bait""secret123"              # 런타임 결합 → 가짜 토큰값 (소스 분할)
   local prompt="bait ""본문 ${key}=${val}"  # 런타임 결합 → 한글 prompt + 가짜 키=값 (소스 분할)
   printf '{"event":"task-call","ts":"2026-06-24T22:00:00","payload":{"pair_inferred":"PAIR-SCIENCE","subagent_type":"x-science","prompt":"%s","description":"d"}}\n' "$prompt" \

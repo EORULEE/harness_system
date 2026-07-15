@@ -1,5 +1,6 @@
 ---
 name: harness-writing-polish
+persona: writing-polish   # 역할 페르소나 정본 = _paper-review-core/personas.yaml (조합 = persona-composition.md)
 description: "최종 문장 polish. 과장 표현·vague attribution·generic conclusion·불필요한 AI식 표현을 완화한다. 의미·수치·인용·metric은 변경하지 않는다. 변경 전후 diff proposal 형태로만 출력(직접 수정 안 함). AI 탐지 회피 목적 금지. 명시 호출 전용."
 disable-model-invocation: true
 argument-hint: "<polish할 문서 file_path 또는 텍스트>"
@@ -32,6 +33,7 @@ allowed-tools:
 
 ## 절차 (읽기 전용 + 제안)
 1. 대상 문서 Read + contract(audience/document_type)·domain profile(terminology) 참조.
+   > 📄 대상이 **DOCX·HWP·HWPX면 kordoc(MCP) 추출** 후 다듬기(수식·병합표 보존). PDF=PyMuPDF 비전. 정본 `_writing-core/document-extraction.md`.
 2. 문장 단위로 완화 후보 식별 → **변경 전/후 쌍** 작성.
 3. 각 변경이 불변식·도메인 용어를 안 건드리는지 self-check.
 
