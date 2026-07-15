@@ -9,8 +9,9 @@ fail(){ echo "  ✗ $1 :: $2"; F=$((F+1)); }
 
 C=$(wc -l < "$CON"); PR=$(wc -l < "$PRJ")
 [ "$C" -ge 70 ] && [ "$C" -le 100 ] && pass "Constitution 70~100줄($C)" || fail "Constitution 줄수" "$C"   # r16: 메타블록 서식 §79-94 정식 포함(stop-guard 검사 규격)으로 상한 80→100
-[ "$PR" -ge 100 ] && [ "$PR" -le 150 ] && pass "Project CLAUDE 100~150줄($PR)" || fail "Project 줄수" "$PR"
-[ "$PR" -ge 40 ] && pass "과축소 금지(40줄 초과)" || fail "과축소" "$PR<=40"
+# 공개판: 프로젝트 CLAUDE = 보편규율 슬림(개인 고유제약 없음) — 10~60줄 밴드
+[ "$PR" -ge 10 ] && [ "$PR" -le 60 ] && pass "Project CLAUDE 슬림 10~60줄($PR)" || fail "Project 줄수" "$PR"
+[ "$PR" -ge 10 ] && pass "과축소 금지(10줄 이상)" || fail "과축소" "$PR<10"
 
 # 하드 5 존재
 for k in "verify-or-abstain" "source-backed query" "no absence" "no fake completion" "destructive/external"; do
@@ -24,8 +25,9 @@ grep -q "stop-guard > hookify" "$CON" && pass "권위순서 명시" || fail "권
 grep -q "약화하지 않" "$CON" && pass "기존 hard gate 불변 명시" || fail "불변" "없음"
 
 # 프로젝트 고유 제약 보존
-for k in "block-rclone-link-awk" "block-hancom-taskkill" "harness-owned invocation" "tailscale serve" "HBWF69S2"; do
-  grep -q "$k" "$PRJ" && pass "고유제약: $k" || fail "고유제약" "$k 없음"
+# 공개판: 개인 고유제약 대신 보편 핵심 앵커가 보존됐는지 검사
+for k in "@CLAUDE.constitution.md" "허위 준수" "probe"; do
+  grep -q "$k" "$PRJ" grep -q "$k" "$PRJ" && pass "핵심앵커: $k" grep -q "$k" "$PRJ" && pass "핵심앵커: $k"  pass "핵심앵커: $k" || fail "핵심앵커" "$k 없음"
 done
 
 # @import 배선
