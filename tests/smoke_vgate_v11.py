@@ -309,7 +309,7 @@ ck("AC-8.1 report 모드 = 위반이어도 exit 0", rc == 0)
 vo.MODE_FILE.write_text("hard")
 rc, err = orch_rc({"session_id": "s", "prompt_id": "h1",
                    "last_assistant_message": "이 작업은 진행 불가입니다."})
-ck("AC-8.2 hard 모드 위반 → exit 2 + 해소지시", rc == 2 and "해소" in err or "declare" in err)
+ck("AC-8.2 hard 모드 위반 → exit 2 + 해소지시", rc == 2 and ("해소" in err or "declare" in err))
 rc, _ = orch_rc({"session_id": "s", "prompt_id": "h2",
                  "last_assistant_message": "방법 A/B 시도 실패, C 미시도 — 미확정입니다. 가능성 검토 계속."})
 ck("AC-8.3 hard 모드 강등 표현 → exit 0", rc == 0)
