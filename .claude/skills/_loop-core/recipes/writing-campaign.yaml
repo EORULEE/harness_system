@@ -1,0 +1,43 @@
+# PUBLIC NOTE: research-agent 는 코어 포함. 논문검색 MCP·Zotero 는 본인 계정 연결 시 완전체(ACCOUNTS.md).
+# recipes/writing-campaign.yaml — 작성 캠페인 (논문/특허/보고서 전체 파이프라인)
+# 정본 절차 문서: docs/writing-campaign-workflow-v2.md (2026-07-02, c+x 2-pass 검토 반영판)
+# 경량 단발 글쓰기("이 절 다듬어줘")는 writing.yaml — 이 레시피는 "캠페인 시작"급 전체 흐름 전용.
+name: writing-campaign
+task_type: writing-campaign
+description: "'논문 캠페인 시작/특허 명세서 작성 시작/보고서 캠페인'. Phase 0(동결·계약)→1(novelty·캘리브레이션)→2(작성)→3(감사)→4(QA·조립). 작성=Claude-first(Gemini는 명시 요청만). 각 Phase 종료 ledger 기록."
+executor: writing-suite + loop-ledger
+validation_mode: [deterministic-only, human-gated, cross-model]
+doc_types: [paper, patent, report]        # Phase 0/1/4 분기 — 정본 문서 §Phase 1 참조
+reuses:
+  - harness-writing-planner
+  - harness-paper-writer               # paper (Claude=primary_writer, model-policy v1.1)
+  - harness-patent-assist              # patent (patent-safety-rules 필수 로딩)
+  - harness-report-writer              # report
+  - research-agent                     # 1-5 저널 실물 조사 / 2-1 팩트 조사
+  - harness-wiki-query                 # patent/report 근거 코퍼스(source card provenance)
+  - zotero                             # 2-3 서지 적재·실재 검증 (OPTIONAL — 미연결 시 '출처 미확보' 표기로 대체, 날조 금지)
+  - harness-claim-evidence-audit       # 3-1
+  - harness-writing-polish             # 3-3 (diff proposal only)
+  - codex-exec-adversarial            # 3-2 교차모델 트랙(CLI 직접)
+  - loop_ledger                        # 각 Phase contract→events→verdict
+steps:
+  - {id: 0, phase: "동결·계약", action: "근거 동결(paper=CSV md5 / patent·report=사용자 refs md5(refs_ledger.md)+wiki 범위) + 문서계약(doc_type·출력형식 docx/HWP·대상) → ledger contract", gate: "사용자 계약 확인"}
+  - {id: 1, phase: "novelty·캘리브레이션", action: "paper: 저널후보 비교→확정(🙋)→novelty(🙋)→EIC pre-check→실물 조사 **비슷한 주제 ≥10편**(전문 정독 3~5, 발췌 대조 나머지)+L5 블라인드 재현→conventions.md(근거 DOI 병기·guidelines 체크리스트)=persona_seed / patent: refs+wiki 코퍼스→claim chart(전수조사 아님 면책)→청구항 뼈대(🙋) / report: refs+wiki 코퍼스→발주처 양식·평가항목 대응표", uses: "research-agent + x측 페어(L5)"}
+  - {id: 2, phase: "작성", action: "팩트조사(출처·[TBD]) → 전 섹션(Claude primary_writer, 동결데이터 앵커 ID 참조) → 서지(DOI 3필드 대조 로그→Zotero 적재→실재만 인용) → 그림(Read 검증+figure_ledger.md)", uses: "paper/patent/report-writer + zotero"}
+  - {id: 3, phase: "감사", action: "claim-evidence table(파일) → 적대검토 2트랙(codex + fresh Claude, 직접수정 금지→diff 제안서→orchestrator 적용→역전파 grep) → 문장분할≤2(patent=상향 비활성) → diff 요약 사용자 묶음 승인(🙋)", uses: "codex exec 적대검토(CLI) + claim-evidence-audit"}
+  - {id: 4, phase: "QA·조립", action: "QA(기존 writer 페어 — 필수절 Data availability·COI·윤리 / 홀리스틱=fresh·교차모델, 3단계 인스턴스 재사용 금지) → 최종관점(EIC/심사관/평가위원) → [TBD] 회수(🙋)→최종 빌드→기계검증 3종(앵커↔동결 대조·추출 diff·PDF→PNG Read) → ledger verdict", uses: "프로젝트 writer 페어 + 결정적 스크립트"}
+budget: {phase34_roundtrip_max: 2, iterations_max: 5, journal_samples_min: 10, journal_deep_read: "3~5"}
+editable_paths: ["<캠페인 산출 디렉토리>/**", "_output/loops/<loop_id>/**", "references/**", "vault/literature/**"]
+human_gates: ["Phase0 계약", "저널/novelty/청구항 확정", "Phase3 diff 묶음 승인", "[TBD] 회수"]
+cross_model: "3-2 codex 필수 트랙(가용성 = python3 scripts/codex_probe.py 실측, '불확실' 금지). x-writing(Claude)만으론 상관오류 못 깸 — codex(다른 모델) 필수. 미가용이면 메타에 'codex 미가용(사유)' 명시. Codex 결과는 정본 아님 — Claude 재검증. stop-guard 검증 1-b가 codex 정직회계 강제."
+agents: "x역할 = 프로젝트 기존 writer 페어 재사용(fusion c/x-writing·KVOMS c/x-writer 등, PAIR_TOPOLOGY alias 해소). 페어 없으면 '하네스 구성' 선행 안내."
+writer_policy: "Claude-first(model-policy v1.1). Gemini = 사용자가 'gemini-write로 다듬어줘' 명시할 때만(explicit_gemini_writer)."
+success_conditions:
+  - "각 Phase ledger verdict 기록(디스크) — 대화 주장만으로 Phase 통과 금지"
+  - "저널 조사 ≥10편 + conventions 규칙마다 근거 DOI"
+  - "인용 = Zotero 실재 항목만 · 수치 = 동결 앵커 대조 diff 0 · 그림 = figure_ledger 완비"
+hold_conditions:
+  - "동결 데이터 변경 감지(md5 불일치) → Phase 2 재진입 강제"
+  - "Phase3↔4 왕복 2회 초과 → [확인 필요] 강등 + 사용자 에스컬레이션"
+  - "patent: patent-safety 면책 4종 미표시 → HOLD"
+notes: "정본 절차·유형분기 상세 = docs/writing-campaign-workflow-v2.md. circuit_breaker ≤5 종속."
