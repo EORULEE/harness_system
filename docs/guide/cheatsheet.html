@@ -1,0 +1,61 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>한 장 요청 치트시트</title><style>
+:root{--navy:#1F497D;--crimson:#BE1138;--bg:#fff;--fg:#1c1c1c;--muted:#5b6470;--card:#f5f7fa;--line:#d8dee6;--code:#eef1f5}
+@media(prefers-color-scheme:dark){:root{--bg:#14171c;--fg:#e8eaee;--muted:#9aa4b2;--card:#1d222a;--line:#333b46;--code:#232a34;--navy:#7da7d9}}
+*{box-sizing:border-box}body{margin:0;font-family:'Malgun Gothic','Apple SD Gothic Neo',system-ui,sans-serif;background:var(--bg);color:var(--fg);line-height:1.55}
+.wrap{max-width:1060px;margin:0 auto;padding:16px}
+h1,h2,h3{color:var(--navy);line-height:1.3}h1{font-size:1.55rem;margin:.4em 0}h2{font-size:1.25rem;border-bottom:2px solid var(--navy);padding-bottom:4px;margin-top:1.6em}h3{font-size:1.05rem}
+a{color:var(--navy)}
+.badge{display:inline-block;padding:1px 8px;border-radius:10px;font-size:.72rem;font-weight:700;vertical-align:middle}
+.b-active{background:#1c7c3c;color:#fff}.b-installed{background:#3b6ea5;color:#fff}.b-auth{background:#c07f00;color:#fff}
+.b-proj{background:#6b5ca5;color:#fff}.b-dis{background:#777;color:#fff}.b-warn{background:var(--crimson);color:#fff}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr));gap:12px;margin:12px 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;min-width:0;overflow-wrap:anywhere}
+td,th{overflow-wrap:anywhere}code{overflow-wrap:anywhere}
+.card h3{margin:.2em 0 .4em}
+.say{background:var(--code);border-left:4px solid var(--navy);padding:8px 10px;border-radius:6px;font-family:Consolas,monospace;font-size:.92rem;margin:6px 0;position:relative;word-break:break-all}
+.say button{position:absolute;right:6px;top:6px;font-size:.7rem;padding:2px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg);cursor:pointer}
+table{border-collapse:collapse;width:100%;margin:10px 0;font-size:.9rem}
+th,td{border:1px solid var(--line);padding:6px 9px;text-align:left;vertical-align:top}th{background:var(--card);color:var(--navy)}
+.tblwrap{overflow-x:auto}
+details{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin:8px 0}
+summary{cursor:pointer;font-weight:700;color:var(--navy)}
+.warnbox{border:2px solid var(--crimson);border-radius:10px;padding:12px 16px;margin:14px 0;background:color-mix(in srgb,var(--crimson) 6%,var(--bg))}
+.warnbox h3{color:var(--crimson);margin-top:0}
+.muted{color:var(--muted);font-size:.86rem}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-weight:700;margin:10px 0}
+.flow span{background:var(--card);border:1.5px solid var(--navy);border-radius:8px;padding:6px 12px}
+.flow em{color:var(--navy);font-style:normal}
+nav.toc{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 0;z-index:5;font-size:.85rem}
+nav.toc a{margin-right:10px;white-space:nowrap;text-decoration:none}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.btnrow a{background:var(--navy);color:#fff;padding:8px 14px;border-radius:8px;text-decoration:none;font-size:.9rem}
+input,select{padding:6px 9px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--fg);font-size:.9rem}
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0;position:sticky;top:0;background:var(--bg);padding:8px 0;z-index:5}
+.big{font-size:1.05rem;font-weight:700}
+@media print{nav.toc,.filters,.say button,.btnrow{display:none}body{background:#fff;color:#000}details{page-break-inside:avoid}.card{page-break-inside:avoid}}
+@media(max-width:640px){.cards{grid-template-columns:1fr}h1{font-size:1.25rem}}
+</style></head>
+<body><div class="wrap">
+<h1>🗣️ 한 장 요청 치트시트</h1>
+<p class="big">아래 문장을 그대로(또는 비슷하게) 말하면 됩니다. 라벨은 선택입니다.</p>
+<h2>파일·상태</h2><div class="say">이 파일이 어디 있는지 확인해줘.<button onclick="cpy(this)">복사</button></div><div class="say">현재 하네스 상태를 확인해줘.<button onclick="cpy(this)">복사</button></div>
+<h2>코드</h2><div class="say">코드를 리뷰해줘.<button onclick="cpy(this)">복사</button></div><div class="say">이 코드의 버그를 찾아줘.<button onclick="cpy(this)">복사</button></div><div class="say">이 버그를 테스트와 함께 고쳐줘.<button onclick="cpy(this)">복사</button></div><div class="say">이 코드를 더 빠르고 안전하게 개선해줘.<button onclick="cpy(this)">복사</button></div><div class="say">이 코드와 논문의 Methods가 일치하는지 확인해줘.<button onclick="cpy(this)">복사</button></div>
+<h2>데이터</h2><div class="say">이 CSV를 정리해줘.<button onclick="cpy(this)">복사</button></div><div class="say">결측치와 이상치를 확인해줘.<button onclick="cpy(this)">복사</button></div><div class="say">통계를 계산하고 그래프를 만들어줘.<button onclick="cpy(this)">복사</button></div><div class="say">학습 데이터와 테스트 데이터가 겹치는지 확인해줘.<button onclick="cpy(this)">복사</button></div><div class="say">원본은 수정하지 말고 결과를 새 폴더에 만들어줘.<button onclick="cpy(this)">복사</button></div>
+<h2>딥러닝·실험</h2><div class="say">이 모델 학습 코드를 검토해줘.<button onclick="cpy(this)">복사</button></div><div class="say">실험 로그를 표로 정리해줘.<button onclick="cpy(this)">복사</button></div><div class="say">실제 학습은 하지 말고 실험 계획만 만들어줘.<button onclick="cpy(this)">복사</button></div><div class="say">실제 GPU 학습을 실행할 준비가 됐는지 검토해줘.<button onclick="cpy(this)">복사</button></div>
+<p class="muted">⚠ 실제 학습 실행은 C/V3 + 사용자 승인이 필요합니다.</p>
+<h2>논문·보고서</h2><div class="say">이 논문 리뷰해줘.<button onclick="cpy(this)">복사</button></div><div class="say">이 자료로 논문 초안을 작성해줘.<button onclick="cpy(this)">복사</button></div><div class="say">Methods와 Results를 작성해줘.<button onclick="cpy(this)">복사</button></div><div class="say">Reviewer 답변서를 만들어줘.<button onclick="cpy(this)">복사</button></div><div class="say">이 논문을 최종 제출 전에 검증해줘.<button onclick="cpy(this)">복사</button></div><div class="say">이 결과를 연구보고서로 정리해줘.<button onclick="cpy(this)">복사</button></div>
+<h2>발표·시각화</h2><div class="say">이 결과로 발표자료를 만들어줘.<button onclick="cpy(this)">복사</button></div><div class="say">표와 그림을 논문용과 발표용으로 각각 만들어줘.<button onclick="cpy(this)">복사</button></div><div class="say">이 슬라이드를 더 이해하기 쉽게 고쳐줘.<button onclick="cpy(this)">복사</button></div>
+<h2>Reference·지식</h2><div class="say">위키에서 이 방법의 근거를 찾아줘.<button onclick="cpy(this)">복사</button></div><div class="say">옵시디언에서 관련 결정과 노트를 찾아줘.<button onclick="cpy(this)">복사</button></div><div class="say">Zotero에서 이 주제의 문헌을 찾아줘.<button onclick="cpy(this)">복사</button></div><div class="say">이 내용을 옵시디언 정리 후보로 만들어줘.<button onclick="cpy(this)">복사</button></div><div class="say">이 결과를 Wiki 승격 후보로 만들어줘.<button onclick="cpy(this)">복사</button></div>
+<p class="muted">읽기는 기본 read-only. canonical write/승격은 별도 승인.</p>
+<h2>Git·환경 (Claude Code 기본 기능)</h2><div class="say">이 변경사항 커밋해줘.<button onclick="cpy(this)">복사</button></div><div class="say">이 작업 브랜치 만들어서 PR 올려줘.<button onclick="cpy(this)">복사</button></div><div class="say">의존성 설치하고 테스트 돌려줘.<button onclick="cpy(this)">복사</button></div><div class="say">빌드가 되는지 확인해줘.<button onclick="cpy(this)">복사</button></div>
+<p class="muted">커밋·PR·외부 push는 사용자가 요청할 때만 수행합니다.</p>
+<h2>릴리스·배포</h2><div class="say">이 릴리스가 배포 가능한지 검토해줘.<button onclick="cpy(this)">복사</button></div><div class="say">이 프로젝트를 서버에 배포해줘.<button onclick="cpy(this)">복사</button></div><div class="say">배포 후 문제가 없는지 확인해줘.<button onclick="cpy(this)">복사</button></div>
+<p class="muted">⚠ 고위험 — V3·백업·canary·사용자 승인 필요.</p>
+<h2>Prefix 예시 15+</h2><div class="say">A0 V0: 이 파일이 어디 있는지 확인해줘.<button onclick="cpy(this)">복사</button></div><div class="say">A0: 현재 상태 확인해줘.<button onclick="cpy(this)">복사</button></div><div class="say">A1 V1: 이 코드를 빠르게 검토해줘.<button onclick="cpy(this)">복사</button></div><div class="say">A1 V2: 이 코드를 교차검증해줘.<button onclick="cpy(this)">복사</button></div><div class="say">A1 V2: 이 논문 리뷰해줘.<button onclick="cpy(this)">복사</button></div><div class="say">A1 V3: 최종 제출 전 검증해줘.<button onclick="cpy(this)">복사</button></div><div class="say">A1: 이 설계 분석해줘.<button onclick="cpy(this)">복사</button></div><div class="say">B V1: 이 CSV 정리해줘.<button onclick="cpy(this)">복사</button></div><div class="say">B V2: 이 데이터를 처리하고 결과를 검토해줘.<button onclick="cpy(this)">복사</button></div><div class="say">B V2: 이 버그를 테스트와 함께 고쳐줘.<button onclick="cpy(this)">복사</button></div><div class="say">B: 이 함수 구현해줘.<button onclick="cpy(this)">복사</button></div><div class="say">C V3: 실제 실험 실행 계획을 검증하고 승인 요청해줘.<button onclick="cpy(this)">복사</button></div><div class="say">V2: 이 결과를 교차검증해줘.<button onclick="cpy(this)">복사</button></div><div class="say">[A1][V2] 이 표 수치 검증해줘.<button onclick="cpy(this)">복사</button></div><div class="say">A1/V2: 코드-논문 정합 확인해줘.<button onclick="cpy(this)">복사</button></div><div class="say">A1, V2: 방법론 검토해줘.<button onclick="cpy(this)">복사</button></div>
+<p class="muted">생성 2026-07-13 · 실측 기반(설치≠활성≠인증 구분) · 관련: <a href="index.html">사용설명서</a> · <a href="SKILL_CATALOG.html">스킬 카탈로그</a> · <a href="SKILL_QUICK_SELECTOR.html">빠른 선택</a> · <a href="SKILL_USAGE_CHEATSHEET.html">치트시트</a></p>
+</div><script>
+function cpy(b){const t=b.parentElement.innerText.replace(/복사$/,'').trim();
+navigator.clipboard.writeText(t).then(()=>{b.textContent='복사됨!';setTimeout(()=>b.textContent='복사',1200)});}
+</script></body></html>

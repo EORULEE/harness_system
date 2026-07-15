@@ -1,0 +1,201 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Claude + Codex 듀얼 하네스 쉬운 사용설명서</title><style>
+:root{--navy:#1F497D;--crimson:#BE1138;--bg:#fff;--fg:#1c1c1c;--muted:#5b6470;--card:#f5f7fa;--line:#d8dee6;--code:#eef1f5}
+@media(prefers-color-scheme:dark){:root{--bg:#14171c;--fg:#e8eaee;--muted:#9aa4b2;--card:#1d222a;--line:#333b46;--code:#232a34;--navy:#7da7d9}}
+*{box-sizing:border-box}body{margin:0;font-family:'Malgun Gothic','Apple SD Gothic Neo',system-ui,sans-serif;background:var(--bg);color:var(--fg);line-height:1.55}
+.wrap{max-width:1060px;margin:0 auto;padding:16px}
+h1,h2,h3{color:var(--navy);line-height:1.3}h1{font-size:1.55rem;margin:.4em 0}h2{font-size:1.25rem;border-bottom:2px solid var(--navy);padding-bottom:4px;margin-top:1.6em}h3{font-size:1.05rem}
+a{color:var(--navy)}
+.badge{display:inline-block;padding:1px 8px;border-radius:10px;font-size:.72rem;font-weight:700;vertical-align:middle}
+.b-active{background:#1c7c3c;color:#fff}.b-installed{background:#3b6ea5;color:#fff}.b-auth{background:#c07f00;color:#fff}
+.b-proj{background:#6b5ca5;color:#fff}.b-dis{background:#777;color:#fff}.b-warn{background:var(--crimson);color:#fff}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr));gap:12px;margin:12px 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;min-width:0;overflow-wrap:anywhere}
+td,th{overflow-wrap:anywhere}code{overflow-wrap:anywhere}
+.card h3{margin:.2em 0 .4em}
+.say{background:var(--code);border-left:4px solid var(--navy);padding:8px 10px;border-radius:6px;font-family:Consolas,monospace;font-size:.92rem;margin:6px 0;position:relative;word-break:break-all}
+.say button{position:absolute;right:6px;top:6px;font-size:.7rem;padding:2px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg);cursor:pointer}
+table{border-collapse:collapse;width:100%;margin:10px 0;font-size:.9rem}
+th,td{border:1px solid var(--line);padding:6px 9px;text-align:left;vertical-align:top}th{background:var(--card);color:var(--navy)}
+.tblwrap{overflow-x:auto}
+details{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin:8px 0}
+summary{cursor:pointer;font-weight:700;color:var(--navy)}
+.warnbox{border:2px solid var(--crimson);border-radius:10px;padding:12px 16px;margin:14px 0;background:color-mix(in srgb,var(--crimson) 6%,var(--bg))}
+.warnbox h3{color:var(--crimson);margin-top:0}
+.muted{color:var(--muted);font-size:.86rem}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-weight:700;margin:10px 0}
+.flow span{background:var(--card);border:1.5px solid var(--navy);border-radius:8px;padding:6px 12px}
+.flow em{color:var(--navy);font-style:normal}
+nav.toc{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 0;z-index:5;font-size:.85rem}
+nav.toc a{margin-right:10px;white-space:nowrap;text-decoration:none}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.btnrow a{background:var(--navy);color:#fff;padding:8px 14px;border-radius:8px;text-decoration:none;font-size:.9rem}
+input,select{padding:6px 9px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--fg);font-size:.9rem}
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0;position:sticky;top:0;background:var(--bg);padding:8px 0;z-index:5}
+.big{font-size:1.05rem;font-weight:700}
+@media print{nav.toc,.filters,.say button,.btnrow{display:none}body{background:#fff;color:#000}details{page-break-inside:avoid}.card{page-break-inside:avoid}}
+@media(max-width:640px){.cards{grid-template-columns:1fr}h1{font-size:1.25rem}}
+</style></head>
+<body><div class="wrap">
+<h1>Claude + Codex 듀얼 하네스 쉬운 사용설명서</h1>
+<p class="big">평소처럼 한국어로 요청하면 하네스가 필요한 Claude·Codex·검증·Reference 기능을 자동으로 선택합니다.</p>
+<p class="big" style="color:var(--navy)">"스킬 이름을 몰라도 됩니다. 하고 싶은 일을 한국어로 말하면 하네스가 해석해 <u>"~로 진행할까요?"</u> 확인 후 실행합니다."</p>
+<div class="warnbox" style="border-width:1.5px"><b>정확히 알아두세요:</b> 라벨 없는 요청은 <b>확인 후 진행</b>(보장된 자동 라우팅 아님 — 현재 자연어 자동분류는 기록 전용).
+Claude+Codex <b>교차검증을 확실히</b> 원하면 <code>A1 V2:</code> 라벨을 붙이세요. 교차 자동 호출은 승인된 프로젝트(allowlist)에서만 동작합니다.</div>
+<nav class="toc">
+<a href="#start">30초 시작</a><a href="#say">이렇게 말하세요</a><a href="#label">라벨</a><a href="#scenario">리뷰 시나리오</a>
+<a href="#how">동작 원리</a><a href="#roles">역할</a><a href="#kb">Reference·MCP</a><a href="#approve">승인 필요</a>
+<a href="#status">상태표</a><a href="#faq">문제 해결</a></nav>
+<div class="btnrow">
+<a href="SKILL_CATALOG.html">무엇을 요청할 수 있나요? (전체 스킬)</a>
+<a href="SKILL_CATALOG.html#" onclick="localStorage.c='dev'">코드 스킬</a>
+<a href="SKILL_CATALOG.html">데이터 스킬</a>
+<a href="SKILL_CATALOG.html">논문·글쓰기 스킬</a>
+<a href="SKILL_CATALOG.html">실험 스킬</a>
+<a href="SKILL_CATALOG.html">Reference 스킬</a>
+<a href="SKILL_CATALOG.html">배포·보안 스킬</a>
+<a href="SKILL_QUICK_SELECTOR.html">빠른 선택표</a>
+<a href="QUICK_REQUEST_CHEATSHEET.html">한 장 치트시트</a>
+</div>
+
+<h2 id="start">🚀 30초 시작 — 이 여섯 개면 충분합니다</h2>
+<div class="cards"><div class='card'><h3>💻 코드 리뷰</h3><div class="say">코드를 리뷰해줘.<button onclick="cpy(this)">복사</button></div><p class='muted'>Codex가 기술 검토, Claude가 교차 확인 · 원본 수정 없음 · 승인 불필요</p></div><div class='card'><h3>🐞 버그 수정</h3><div class="say">이 버그를 테스트와 함께 고쳐줘.<button onclick="cpy(this)">복사</button></div><p class='muted'>Claude/Codex 중 작성 1 + 검토 1 · 승인된 경로만 수정 · 수정 반영 전 확인</p></div><div class='card'><h3>📊 데이터 분석</h3><div class="say">이 데이터를 분석하고 표와 그래프를 만들어줘.<button onclick="cpy(this)">복사</button></div><p class='muted'>Claude 해석 + Codex 수치 검증 · 원본 보존·새 폴더 · 승인 불필요</p></div><div class='card'><h3>📄 논문 리뷰</h3><div class="say">이 논문 리뷰해줘.<button onclick="cpy(this)">복사</button></div><p class='muted'>Claude 과학·편집 + Codex 기술·재현성 · 읽기 전용 · 승인 불필요</p></div><div class='card'><h3>✍️ 논문 작성</h3><div class="say">이 자료로 논문 초안을 작성해줘.<button onclick="cpy(this)">복사</button></div><p class='muted'>Claude 초안 + Codex 적대검토 · draft only · 반영 전 승인</p></div><div class='card'><h3>📚 Reference 검색</h3><div class="say">위키·옵시디언·Zotero에서 관련 근거를 찾아줘.<button onclick="cpy(this)">복사</button></div><p class='muted'>Reference Gateway 읽기 전용 · 읽기 전용 · 승인 불필요</p></div></div>
+
+<h2 id="say">🗣️ 그냥 이렇게 말하세요</h2>
+<p>전체 문구 모음은 <a href="QUICK_REQUEST_CHEATSHEET.html">한 장 치트시트</a>에 있습니다. 똑같이 말할 필요 없이 비슷하게만 말해도 하네스가 "~로 진행할까요?" 하고 확인합니다.</p>
+<div class="cards">
+<div class="card"><h3>파일·상태</h3><div class="say">이 파일이 어디 있는지 확인해줘.<button onclick="cpy(this)">복사</button></div><div class="say">현재 하네스 상태를 확인해줘.<button onclick="cpy(this)">복사</button></div></div>
+<div class="card"><h3>코드</h3><div class="say">코드를 리뷰해줘.<button onclick="cpy(this)">복사</button></div><div class="say">이 버그를 테스트와 함께 고쳐줘.<button onclick="cpy(this)">복사</button></div></div>
+<div class="card"><h3>데이터</h3><div class="say">이 CSV를 정리해줘.<button onclick="cpy(this)">복사</button></div><div class="say">통계를 계산하고 그래프를 만들어줘.<button onclick="cpy(this)">복사</button></div></div>
+<div class="card"><h3>딥러닝·실험</h3><div class="say">이 모델 학습 코드를 검토해줘.<button onclick="cpy(this)">복사</button></div><div class="say">실제 학습은 하지 말고 실험 계획만 만들어줘.<button onclick="cpy(this)">복사</button></div></div>
+<div class="card"><h3>논문·보고서</h3><div class="say">이 논문 리뷰해줘.<button onclick="cpy(this)">복사</button></div><div class="say">이 자료로 논문 초안을 작성해줘.<button onclick="cpy(this)">복사</button></div></div>
+<div class="card"><h3>발표·시각화</h3><div class="say">이 결과로 발표자료를 만들어줘.<button onclick="cpy(this)">복사</button></div><div class="say">표와 그림을 논문용과 발표용으로 각각 만들어줘.<button onclick="cpy(this)">복사</button></div></div>
+<div class="card"><h3>Reference·지식</h3><div class="say">위키·옵시디언·Zotero에서 관련 근거를 찾아줘.<button onclick="cpy(this)">복사</button></div><div class="say">이 결과를 Wiki 승격 후보로 만들어줘.<button onclick="cpy(this)">복사</button></div></div>
+<div class="card"><h3>Git·환경</h3><div class="say">이 변경사항 커밋해줘.<button onclick="cpy(this)">복사</button></div><div class="say">이 작업 브랜치 만들어서 PR 올려줘.<button onclick="cpy(this)">복사</button></div></div>
+<div class="card"><h3>릴리스·배포 <span class="badge b-warn">고위험</span></h3><div class="say">이 릴리스가 배포 가능한지 검토해줘.<button onclick="cpy(this)">복사</button></div><div class="say">배포 후 문제가 없는지 확인해줘.<button onclick="cpy(this)">복사</button></div></div>
+</div>
+
+<h2 id="label">🏷️ 라벨 사용법 (선택사항)</h2>
+<p>라벨 없이 말하면 하네스가 자동 선택합니다. 검증 강도를 직접 정하고 싶으면 앞에 붙이세요:</p>
+<div class="say">A1 V2: 코드를 리뷰해줘.<button onclick="cpy(this)">복사</button></div>
+<div class="tblwrap"><table>
+<tr><th>Mode</th><th>쉬운 의미</th></tr>
+<tr><td><b>A0</b></td><td>찾아보기·상태 확인 (아무것도 안 바꿈)</td></tr>
+<tr><td><b>A1</b></td><td>분석·검토·설계 (아무것도 안 바꿈)</td></tr>
+<tr><td><b>B</b></td><td>만들기·고치기 (승인된 곳만 수정)</td></tr>
+<tr><td><b>C</b></td><td>실제 실험·배포·외부 실행 (반드시 사용자 승인)</td></tr>
+</table></div>
+<div class="tblwrap"><table>
+<tr><th>Verification</th><th>쉬운 의미</th></tr>
+<tr><td><b>V0</b></td><td>기계 확인만 (제일 빠름)</td></tr>
+<tr><td><b>V1</b></td><td>한 하네스 중심</td></tr>
+<tr><td><b>V2</b></td><td>Claude와 Codex가 서로 교차검증</td></tr>
+<tr><td><b>V3</b></td><td>최고 수준 검증 + 사용자 최종 승인</td></tr>
+</table></div>
+<p>지원 문법: <code>A1 V2:</code> · <code>A1, V2:</code> · <code>[A1][V2]</code> · <code>A1/V2:</code></p>
+<p><span class="badge b-warn">안전 상향</span> 위험한 작업(배포·실제 학습·외부 업로드·최종 제출)은 사용자가 낮은 검증을 지정해도 시스템이 자동으로 V3까지 올립니다. 낮추기는 안 됩니다.</p>
+
+<h2 id="scenario">🔍 "코드를 리뷰해줘"는 실제로 무엇을 하나</h2>
+<div class="card">
+<p><b>사용자:</b> <div class="say">코드를 리뷰해줘.<button onclick="cpy(this)">복사</button></div></p>
+<p><b>기본 해석:</b> Mode A1 · V2 후보 · 원본 read-only <span class="muted">(무라벨=확인 후 진행 · 확실한 교차는 <code>A1 V2:</code>)</span></p>
+<p><b>Primary:</b> Codex(기술·테스트·재현성) → <b>교차:</b> Claude(구조·의도·과학 영향)</p>
+<p><b>기계 검증(Layer 1):</b> test·lint·type·diff·source hash</p>
+<p><b>Major 발견 시:</b> Loop 최대 2회 (그래도 수정은 안 함 — 리뷰는 리뷰)</p>
+<p><b>정상 응답 끝줄 예:</b></p><div class="say">처리: A1 · V2 · dev · Codex→Claude · Loop 0/2 · CROSS_PASS<button onclick="cpy(this)">복사</button></div>
+<p class="muted">이 줄이 없거나 SINGLE_PLATFORM_PROVISIONAL이면 그 프로젝트의 dual routing이 아직 완전 활성이 아닐 수 있습니다 — "이 프로젝트 라우팅 상태 확인해줘"라고 물어보세요.</p>
+</div>
+<div class="tblwrap"><table>
+<tr><th>이렇게 말하면</th><th>이렇게 동작</th></tr>
+<tr><td>리뷰해줘</td><td>읽기 전용 검토</td></tr>
+<tr><td>고쳐줘</td><td>B 모드 — 승인된 곳만 수정</td></tr>
+<tr><td>최종 검증해줘</td><td>V3 (최고 강도+승인)</td></tr>
+<tr><td>빠르게 검토해줘</td><td>V1 (한 하네스)</td></tr>
+<tr><td>교차검증해줘</td><td>V2 이상 (Claude+Codex)</td></tr>
+</table></div>
+
+<h2 id="how">⚙️ 내부에서 벌어지는 일 (5단계)</h2>
+<div class="flow"><span>1 요청 이해</span><em>→</em><span>2 전문가 선택</span><em>→</em><span>3 작업/리뷰</span><em>→</em><span>4 다른 하네스가 검토</span><em>→</em><span>5 결과+근거 기록</span></div>
+<div class="flow"><span>사용자</span><em>→</em><span>AutoPilot</span><em>→</em><span>Claude / Codex</span><em>→</em><span>검증</span><em>→</em><span>결과</span></div>
+<details><summary>자세히 보기 — 내부 용어</summary>
+<p><b>Mode</b>(A0/A1/B/C)=하는 일의 종류, <b>Verification</b>(V0~V3)=검증 강도, <b>Pair</b>=요청별로 뽑는 전문가 조합(0~3),
+<b>Skill</b>=세부 작업 절차, <b>Broker</b>=Claude↔Codex 사이 안전한 전달자(계약·hash만 전달, 추론·비밀 전달 안 함),
+<b>Ledger</b>=위조 불가한 검증 기록(hash-chain), <b>Loop</b>=발견→수정→재검(최대 2회).</p></details>
+
+<h2 id="roles">🤝 Claude와 Codex — 누가 무엇을</h2>
+<div class="tblwrap"><table>
+<tr><th>작업</th><th>Claude 측</th><th>Codex 측</th><th>공통 검증</th><th>단일 플랫폼 대체 시</th></tr>
+<tr><td>코드 리뷰</td><td>구조·의도·과학적 영향</td><td><b>primary</b> 기술·테스트·재현성</td><td>diff/hash/test</td><td>가능 — SINGLE_PLATFORM_PROVISIONAL</td></tr>
+<tr><td>데이터 처리</td><td>해석·과학적 의미</td><td><b>primary</b> 처리·통계·코드</td><td>metric recompute</td><td>가능 — PROVISIONAL</td></tr>
+<tr><td>논문 리뷰</td><td><b>primary</b> 편집·과학</td><td>기술·재현성</td><td>citation/number</td><td>가능 — PROVISIONAL</td></tr>
+<tr><td>논문 작성</td><td><b>primary</b> narrative</td><td>technical reviewer</td><td>evidence bundle</td><td>draft만 가능(교차 없이 최종 금지)</td></tr>
+<tr><td>시각화</td><td>메시지·스토리</td><td><b>primary</b> artifact·QA</td><td>overflow/hash</td><td>가능 — PROVISIONAL</td></tr>
+<tr><td>release</td><td>정책·범위</td><td><b>primary</b> 보안·manifest Seal</td><td>Final Seal</td><td>불가 — V3 교차+승인 필수</td></tr>
+</table></div>
+<p class="muted">역할은 고정 우열이 아니라 작업 라우터가 결정합니다. 공유: source·용어집·계약·evidence·기준 / 비공유: 내부 추론·세션·raw transcript·credential·self-review.</p>
+
+<h2 id="fusion">🧩 한 프로젝트가 여러 성격을 가져도 됩니다</h2>
+<p>프로젝트를 "논문용" "코드용"으로 나누지 않습니다. 하나의 프로젝트가 연구+데이터+코드+딥러닝+논문+발표+지식관리를 동시에 가질 수 있고, <b>요청마다</b> 필요한 기능만 골라 씁니다.</p>
+<div class="say">실험 결과를 논문 Results와 발표자료로 정리해줘.<button onclick="cpy(this)">복사</button></div>
+<p class="muted">→ data + experiment + paper + visual 네 기능이 이번 요청에만 선택됩니다.</p>
+
+<h2 id="kb">📚 Wiki·Obsidian·Zotero·MCP — 언제 무엇이 필요한가</h2>
+<div class="tblwrap"><table>
+<tr><th>단위</th><th>해야 하는 일</th><th>몇 번?</th></tr>
+<tr><td>머신별</td><td>MCP 설치·등록·로그인</td><td><b>머신당 1회</b></td></tr>
+<tr><td>프로젝트별</td><td>Zotero collection·Obsidian namespace·Wiki scope·데이터 정책</td><td>프로젝트당 1회(관리자)</td></tr>
+<tr><td>요청별</td><td>아무것도 안 함 — 필요한 Reference만 자동 호출</td><td>0회</td></tr>
+</table></div>
+<p><b>프로젝트마다 다시 로그인하지 않습니다.</b> 한 source가 미인증이어도(예: NotebookLM authentication-required) 나머지 기능은 정상 동작합니다 — 전체 실패가 아닙니다.</p>
+<p>현재 source 상태(euru 기준): Wiki <b>ready</b> · Obsidian <b>ready</b> · Zotero <b>ready(key 구성)</b> · GitHub <b>registered</b> · NotebookLM <b>authentication-required</b></p>
+
+<h2 id="approve">🛑 하네스가 자동으로 하지 않는 것 (반드시 물어봄)</h2>
+<div class="warnbox"><h3>사용자 승인 필수</h3>
+<ul>
+<li>실제 학습·실험 실행, GPU 사용</li>
+<li>유료·외부 API 호출(대량)</li>
+<li>confidential 자료 외부 전송, 외부 업로드</li>
+<li>파일 덮어쓰기 충돌, 삭제·rename</li>
+<li>논문 최종 제출, release promotion, 실제 서버 배포</li>
+<li>Wiki/Obsidian/Zotero canonical write(정본 반영)</li>
+<li>해결 안 된 Major finding·의견 불일치가 남은 채 진행</li>
+</ul></div>
+
+<h2 id="status">🧾 상태·오류 읽는 법</h2>
+<div class="tblwrap"><table>
+<tr><th>표시</th><th>뜻</th></tr>
+<tr><td><b>PASS</b></td><td>해당 검증 통과</td></tr>
+<tr><td><b>CROSS_PASS</b></td><td>Claude/Codex 교차검증 통과</td></tr>
+<tr><td><b>ACTIVE</b></td><td>실제 운영 사용 가능 — 단, <b>범위별</b>(머신/프로젝트/기능/R·W)로 다름. 예: 프로젝트 ACTIVE여도 write는 승인 필요</td></tr>
+<tr><td><b>static-pass</b></td><td>설치는 됐지만 live 확인이 남음</td></tr>
+<tr><td><b>authentication-required</b></td><td>로그인이 필요함</td></tr>
+<tr><td><b>SINGLE_PLATFORM_PROVISIONAL</b></td><td>한 플랫폼만 사용한 임시 결과</td></tr>
+<tr><td><b>HUMAN_REQUIRED</b></td><td>사용자 판단이 필요함</td></tr>
+<tr><td><b>HOLD</b></td><td>안전하게 중단됨</td></tr>
+<tr><td><b>BLOCK</b></td><td>검토 대상 자체가 통과하면 안 됨</td></tr>
+</table></div>
+<p><b>중요:</b> <code>CROSS_PASS</code>(검증 과정 통과)와 <code>subject=REJECT/BLOCK</code>(검토 대상에 문제 발견)은 <b>동시에 나올 수 있습니다</b>.
+예: 하네스가 코드를 제대로 교차검증했고(과정 PASS), 그 과정에서 진짜 버그를 찾았다(대상 문제 발견). 둘은 별개입니다.</p>
+
+<h2 id="faq">🧯 문제 해결 FAQ</h2>
+
+<details><summary>1. "코드를 리뷰해줘"라고 했는데 수정이 됐어요?</summary>
+<p>"리뷰해줘"는 읽기 전용, "고쳐줘"는 수정 모드(B)입니다. 의도와 다르면 <b>source diff 확인해줘</b>라고 하고, 문제면 HOLD/rollback을 요청하세요.</p></details>
+<details><summary>2. Claude만 응답하고 Codex가 안 왔어요?</summary>
+<p>그 프로젝트의 Connector/라우팅이 아직 활성이 아닐 수 있습니다. 응답 끝의 처리 줄에 <code>SINGLE_PLATFORM_PROVISIONAL</code>이 보이면 임시 단일 결과입니다. "이 프로젝트 dual routing 상태 확인해줘"라고 물어보세요.</p></details>
+<details><summary>3. Zotero가 안 돼요?</summary>
+<p>Zotero 인증은 머신별 1회입니다. euru가 canonical이고 다른 머신은 Gateway 읽기 전용입니다. "이 머신 Zotero 인증 상태 확인해줘"라고 하세요. 한 source가 미인증이어도 나머지 기능은 정상입니다.</p></details>
+<details><summary>4. 다른 서버에서는 안 돼요?</summary>
+<p>그 머신의 runtime·hook trust·MCP·프로젝트 매핑을 확인해야 합니다: "이 머신 하네스 상태 확인해줘". 머신 목록은 관리자에게 확인하세요.</p></details>
+<details><summary>5. 너무 느려요?</summary>
+<p>"빠르게 검토해줘" 또는 <code>A1 V1:</code> 라벨을 쓰세요. V2/V3는 교차검증 비용이 더 듭니다.</p></details>
+<details><summary>6. 긴 내부 로그가 나와요?</summary>
+<p>"간단히 결과만 보여줘" / "상세 로그는 파일에만 저장해줘"라고 하세요.</p></details>
+<details><summary>7. 뭔가 이상할 때 최소 확인 3가지</summary>
+<p>① 응답 끝 처리 줄(<code>처리: A1 · V2 · …</code>)이 있는지 ② <code>source diff 확인해줘</code>로 원본 무변경 확인 ③ <code>상세 로그 보여줘</code>로 검증 근거 확인. 그래도 이상하면 "HOLD하고 롤백해줘".</p></details>
+<details><summary>8. 상세 검증 내역을 보고 싶어요?</summary>
+<p>"상세 로그 보여줘" / "선택된 Agent·Pair·evidence 보여줘"라고 하세요.</p></details>
+
+
+</body></html>
