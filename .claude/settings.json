@@ -35,6 +35,16 @@
             "timeout": 10
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/hooks/vgate-node.sh\" pre-tool-vgate-tripwire.mjs",
+            "timeout": 8
+          }
+        ]
       }
     ],
     "PostToolUse": [
@@ -54,6 +64,15 @@
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/hooks/stop.mjs\"",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/hooks/vgate-node.sh\" stop-vgate-orchestrator.mjs",
             "timeout": 10
           }
         ]
