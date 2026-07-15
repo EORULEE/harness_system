@@ -21,10 +21,11 @@
 
 ## 3. Codex + ChatGPT — 코드 적대검토 (선택)
 - 용도: 코드 리뷰를 교차모델(ChatGPT)로 적대검토. 없으면 Claude 리뷰로 대체.
-- **본인 계정으로 설정**:
-  1. Claude Code에서 Codex 플러그인 설치: `/plugin` → `codex` 검색·설치.
-  2. **본인 ChatGPT 계정**으로 인증(플러그인 안내에 따라 로그인).
-  3. (모델 차단 회피) `~/.codex/config.toml` 에 `model = "gpt-5.5"` 권장.
+- **본인 계정으로 설정** (CLI 방식 — 플러그인은 사용하지 않음):
+  1. Codex CLI 설치: OpenAI 공식 안내(https://developers.openai.com/codex/cli) 에 따라 설치.
+  2. 터미널에서 `codex login` → **본인 ChatGPT 계정**으로 브라우저 인증.
+  3. 확인: `codex exec --sandbox read-only "PONG만 출력해"` 가 PONG 을 돌려주면 연결 완료.
+  4. 이후 하네스가 검토 요청 시 `codex exec`(읽기전용)로 호출합니다 — 자동 아님, 요청 시.
 
 ## 4. 연구·코드 MCP 서버 (선택) — 본인 계정으로 추가
 용도: 논문 조사(semantic-scholar · paper-search) · 코드(github) · 코드 심볼 탐색(serena).
