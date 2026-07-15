@@ -24,6 +24,15 @@
             "timeout": 3
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/hooks/salience-packet.mjs\"",
+            "timeout": 8
+          }
+        ]
       }
     ],
     "PreToolUse": [
@@ -73,6 +82,24 @@
           {
             "type": "command",
             "command": "bash \"$CLAUDE_PROJECT_DIR/hooks/vgate-node.sh\" stop-vgate-orchestrator.mjs",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/hooks/stop-absence-advisory.mjs\"",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/hooks/stop-verification-gate.mjs\"",
             "timeout": 10
           }
         ]

@@ -5,7 +5,7 @@
 > 권위 순서: **stop-guard > hookify > 이 헌법 > advisory**.
 > ⚠️ 이 문서는 신규 규칙을 **추가하지 않는다** — 기존 글로벌·프로젝트 규율 중
 > "매 턴 기계 검증 가능한 핵심"만 **추출·집약**한 것이다.
-> (원문 정본 = 글로벌 `~/.claude/CLAUDE.md` + feedback memory. 삭제 아님.)
+> (이 문서가 공개판의 정본이다.)
 
 ## 하드 5 (검증가능 단정에 적용)
 
@@ -46,7 +46,7 @@
 - **결론 품질 검토 전에 `evidence_bundle.py` 로 전제 evidence 부터 검사**.
 - 미검증 전제 = "전제 HOLD/Unverified" → c/x 가 같은 잘못된 전제를 공유하지 않게 한다.
 - 최소 2회, 최대 5회 후 미수렴 시 사용자 에스컬레이션.
-- this-project = 페어 없음 → 1-pass + 본 헌법 §3 기계 검증. 배포·글로벌규율·설계 결정은 codex 적대검토(x-) 교차.
+- c-/x- 페어 미구성 프로젝트 = 1-pass + 본 헌법 §3 기계 검증. codex CLI 가용 시(codex_probe.py 실측) 배포·설계 결정은 codex exec 적대검토 교차 권장.
 
 ## 기계 강제 (단계화: report → soft → hard, 전환은 승인 게이트)
 - `tool_use_audit.py` — 읽기/검색 도구 사용을 `.claude/runtime/tool-use.jsonl` 에 경량 기록(내용 본문 제외 = 증거원).
@@ -61,11 +61,10 @@
   - ⚠️ absence_claim_guard 는 이 게이트들과 **무관·하위**(report-only). exit code 충돌 없음(아래 배선 규칙).
 
 ## 위임 (이 헌법에 두지 않는 것 → 참조 위치)
-- 파일/HTML 공유·Drive·tailscale·모니터링·체크포인트·KB·v4.6 이력 → `docs/harness-workflows-reference.md`
 - "하지마" 이중처리·hookify 하드차단 목록 → 프로젝트 `CLAUDE.md`(고유 제약) + `.claude/hookify.*.local.md`
 - dev-discipline 체크리스트 → `.claude/skills/_dev-discipline-core/`
 - deep-interview·ralph·writing·research·Mode C → 각 skill(`disable-model-invocation` 정책 그대로)
-- 도메인 규율(그림·논문조사·DL·Windows인코딩·Gemini사용량) → 글로벌 CLAUDE.md + feedback memory
+- 도메인 규율 → 각 스킬 문서(설치자가 자기 memory 로 확장)
 
 ## 적용 우선순위 (최우선)
 1. 사용자 입력을 받으면 **가장 먼저 실행 모드(A0/A1/B/C)를 결정**한다.
@@ -75,7 +74,7 @@
    꾸며 쓰지 말고, 못 한 이유를 설명한다.
 
 > 정본 절차·이력은 위임 위치에 있으며 삭제되지 않았다(매 턴 주입에서만 제외).
-> 본 헌법은 글로벌 `~/.claude/CLAUDE.md`(hard-ban #4 로 불변)의 핵심을 프로젝트 레벨로 집약한 것이다.
+> 본 헌법은 하네스 응답 규율의 핵심 집약본이다.
 
 ## 메타 블록 서식 (A1/B 응답 필수 — A0 는 미니 라인 `📌 mode: A0 ...` 1줄)
 A1/B 턴은 응답 끝에 아래 정식 서식(정본 v2.7 매뉴얼)으로. stop-guard 가 존재+수치 정합을 검사한다.

@@ -739,7 +739,7 @@ def cmd_stop_guard() -> None:
     is_b_workflow = _matches_trigger(preview, full_prompt, _B_WORKFLOW_TRIGGERS)
     is_true_conv = _matches_trigger(preview, full_prompt, _TRUE_CONVERSATIONAL)
     # (2026-06-10 포렌식 ①수정) 진행/승인/조종/빠른확인 = 새 c-/x- 팬아웃 불필요 turn.
-    #   forensic(files_origin 11/11 · coin 65/67 차단이 이 범주): A1/B 키워드는 있으나 실제론
+    #   forensic(this-project 11/11 · coin 65/67 차단이 이 범주): A1/B 키워드는 있으나 실제론
     #   진행지시·승인·조종·단순확인이라 2-pass 강제가 오발화. substring 매칭(긴 프롬프트 내 포함도 인정).
     _LIGHT_STEER_SUBSTR = (
         # 진행/계속/이어서

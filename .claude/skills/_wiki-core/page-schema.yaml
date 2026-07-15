@@ -1,6 +1,6 @@
 # page-schema.yaml — wiki 페이지 frontmatter superset 스키마
 # 정본: 모든 vault/wiki/ 페이지는 type에 맞는 필수 필드를 가져야 한다.
-# (upstream llm-wiki-agent 포맷 + files_origin 거버넌스 superset)
+# (upstream llm-wiki-agent 포맷 + this-project 거버넌스 superset)
 
 version: 1
 # upstream 공통 필드 + 하네스 거버넌스 확장(zotero·sha256·trust_boundary·anchor)

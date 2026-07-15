@@ -1,0 +1,32 @@
+# profile.yaml — 문서유형 특성 프로필: 일반 문서(generic, fallback)
+# 계약: _output/contracts/contract-review-doctype-generalization-20260710.md
+# 문서유형 미지정·미판별 시 fallback. 목적·독자를 문서에서 추론해 채운다.
+# rubric = 공통 코어(원문근거·논리·명료·공정) + 아래 evaluation_axes 오버레이.
+
+schema: doc_type_profile
+version: 1
+name: generic
+
+purpose: >
+  (문서에서 추론) — 리뷰 시작 시 문서의 목적을 먼저 파악해 이 필드를 채운다. 목적이 불명확하면 리뷰 서두에 명시.
+audience: >
+  (문서에서 추론) — 대상 독자를 파악. 불명확하면 "일반 독자"로 단정하지 않는다(전문 기술문서를 과잉 전문/대중문서를 전문가용으로 오판 위험):
+  audience=unknown(신뢰도 낮음)으로 두고 독자-중립 점검만 수행, 리뷰 서두에 "독자 미확정"을 명시(상호작용형이면 확인).
+# 논리 정합·명료성은 공통 코어(review-rubric ①)에서 1회만 적용 — 여기서 중복 정의하지 않는다(이중 평가/가중 방지).
+evaluation_axes:
+  - "목적 적합성: 문서가 (추론된) 목적을 달성·응답하는가"
+  - "근거 충분성: 주장이 근거(데이터·출처·인용)로 뒷받침되는가"
+  - "완결성: 범위·한계가 명시되고 누락된 핵심이 없는가"
+structure_conventions: >
+  (문서 관행 따름) — 특정 구조를 강제하지 않고, 문서 자체의 논리 구조가 목적에 맞는지 평가.
+success_criteria: >
+  명시된(또는 추론된) 목적·요건 충족. 독자가 의도된 것을 얻으면 성공.
+language: follow_document
+
+non_axes: >
+  논문·보고서 특유 축(신규성·통계·실행권고·재현성)을 일괄 강제하지 않는다.
+  추론된 목적이 그것을 요구할 때만 해당 축을 적용.
+
+# ── axis_state (T1, review-rubric "축별 평가 상태") ──
+# 각 축에 pass/issue/not_applicable/not_assessed_missing_input 라벨.
+#   추론된 목적이 축을 요구 안 하면 not_applicable · 목적·독자 판별 입력 부족 시 not_assessed_missing_input.

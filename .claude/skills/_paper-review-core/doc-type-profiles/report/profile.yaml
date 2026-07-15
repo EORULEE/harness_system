@@ -1,0 +1,37 @@
+# profile.yaml — 문서유형 특성 프로필: 보고서(report)
+# 계약: _output/contracts/contract-review-doctype-generalization-20260710.md
+# ★ 심장: 이 프로필이 rubric·페르소나의 파생원. 논문 기준을 이식하지 않는다.
+# rubric = 공통 코어(원문근거·논리·명료·공정) + 아래 evaluation_axes 오버레이.
+
+schema: doc_type_profile
+version: 1
+name: report
+
+# ── 5필드 특성 (이 문서가 본질적으로 무엇인가) ──────────────────
+purpose: >
+  결과·분석을 전달하고 의사결정을 지원한다. 지식 기여(논문)가 아니라 실무 판단·조치를 이끄는 것이 목적.
+audience: >
+  발주처·경영진·평가위원 등 의사결정자. 연구 동료가 아니라 결과를 '쓸' 사람 — 실행 함의를 먼저 본다.
+evaluation_axes:
+  - "목표 달성도: 보고서가 명시된 과업 목표·요구사항을 충족·응답했는가(요건 추적성)"
+  - "실행가능 권고: 결론이 구체적·실행가능한 권고/조치로 이어지는가(막연한 서술 아님)"
+  - "데이터 근거: 주장이 데이터·출처로 뒷받침되는가, 수치·표·그림이 본문과 정합하는가"
+  - "명료성·구조: 요약(Executive Summary)이 자기완결적이고, 의사결정자가 빠르게 파악 가능한가"
+  - "완결성: 범위·한계·가정이 명시되고, 누락된 핵심 항목이 없는가"
+  - "도메인 타당성: 분석·해석이 해당 분야에서 타당한가(피상적 아님)"
+structure_conventions: >
+  요약(Executive Summary) → 배경·목적 → 방법·데이터 → 결과·분석 → 결론·권고 → 부록.
+  요약이 결론·권고를 담아 단독으로 읽혀야 한다(의사결정자 우선).
+success_criteria: >
+  발주처 수용·과제 평가 통과·의사결정에 실질 기여. '읽고 무엇을 할지'가 분명해지면 성공.
+language: follow_document        # 리뷰 언어 = 문서 언어
+
+# ── 비적용(논문 축을 강제하지 말 것) ──────────────────────────
+non_axes: >
+  신규성(novelty)·통계 유의성·재현성(seed/코드공개)·저널 서지형식은 보고서 기본 평가축이 아니다
+  (해당 보고서가 그것을 요구할 때만 부가). 논문 rubric 8차원 이식 금지.
+
+# ── axis_state (T1, review-rubric "축별 평가 상태") ──
+# 각 축 판정에 pass/issue/not_applicable/not_assessed_missing_input 라벨.
+#   예) 순수 상태·기록형 보고서 → 권고 성격 축 = not_applicable
+#       과업지시서·규격 부재 → 목표 달성도(요건 추적성) = not_assessed_missing_input(문서 결함 아님, 입력 부족).

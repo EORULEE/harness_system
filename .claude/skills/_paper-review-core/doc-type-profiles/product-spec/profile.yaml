@@ -1,0 +1,30 @@
+# profile.yaml — 문서유형 특성 프로필: 제품/산출물 명세서(product-spec)
+# 대상 = 기계판독 계약(파일 포맷·명명·NoData·스키마·수용검사) 정의 문서. 실측 근거: SAR-L2A-DOC-005 Product Specification v1.0.0.
+# rubric = 공통 코어 + 아래 evaluation_axes 오버레이. 논문 축 이식 금지.
+schema: doc_type_profile
+version: 1
+name: product-spec
+purpose: >
+  소비자(consumer)·다운스트림 도구가 산출물을 **기계적으로 정확히 판독·검증**하게 하는 계약. 포맷·명명·값 규약이
+  모호하면 소비 코드가 깨지므로, "필수/권장" 적합성 경계와 파서 계약이 명확한지를 판다. 학술 신규성 아님.
+audience: >
+  산출물을 프로그램으로 읽는 개발자·QA·통합자. 스펙만 보고 파서를 작성/검증할 수 있어야 하는 독자.
+evaluation_axes:
+  - "계약 정확·완결성: 파일 포맷·데이터타입·CRS·NoData·명명·스키마가 파서 작성에 충분히 명시되고 예시와 일치하는가."
+  - "적합성 경계: 필수/권장/조건부가 구분되고 적합성 판정(acceptance test)이 재현가능·기계검증가능한가."
+  - "값·단위·경계조건: NoData·유효범위·좌표·단위(degree vs meter)·경계(footprint 밖)가 정확·일관하고 오해소지를 선제 경고하는가."
+  - "버전·계보 정합: 대상 릴리스·스키마 버전·도구 버전이 고정되고 forward-compat(unknown field 무시) 정책이 있는가."
+  - "예제↔규격 일치: 부록 코드·샘플(XML/JSON/gdalinfo)이 본문 규격과 정확히 대응하는가(예제 drift 검출)."
+  - "문서세트 정합: 다른 문서(ATBD·User Manual·Installation)와 정본 우선순위대로 충돌 없이 정합하는가(교차 대조)."
+structure_conventions: >
+  관행: 정본 우선순위 → 규범 범위/적합성 → 디렉터리·명명 → grid/좌표 → 산출물별 포맷 표 → 스키마(XML/JSON) →
+  로그/ledger → atomicity/상태 → 수용검사 표 → 알려진 한계/소비자 요구 → 판독 예제. 표 중심 + gdalinfo/xmllint 등 검증명령.
+success_criteria: >
+  소비자가 스펙만으로 파서를 작성해 산출물을 판독·검증할 수 있고, 적합성 판정이 기계적으로 재현되며,
+  값·경계·버전 규약이 무모호하고, 예제가 규격과 일치하고, 문서세트와 정합하면 성공.
+language: follow_document
+non_axes: >
+  학술 신규성·이론 증명·문단 산문 완성도·저널 형식. ⚠️ 단 스펙이 참조하는 알고리즘 계보(예: RTC lineage)의 정합은
+  ATBD와의 교차 대조로 확인(문서세트 정합 축). 논문 8차원 이식 금지.
+# axis_state: 구현/실제 release 파일 미제공 시 "예제↔규격·적합성 재현"의 실행대조만 not_assessed, 규격 내적 정합은 실판정.
+# 확장: 같은 기술문서 계열([[algorithm-doc]] 확장슬롯). 공통 재사용축=[완결성·값경계·버전정합·예제일치·문서세트정합].

@@ -1,0 +1,45 @@
+# journal-profiles.yaml — 저널별 심사 관행·가중·언어 오버레이
+# 공통 기준 = review-rubric.md. 프로필 미지정/미등재 시 = default(입력 논문 언어 따름).
+# 확장: 새 저널은 아래 스키마로 항목 추가만(코어 무수정).
+
+schema: journal_profile
+version: 1
+
+default:
+  language: follow_manuscript        # 리포트·응답문 언어 = 입력 논문 언어
+  verdict_vocab: [accept, minor revision, major revision, reject]
+  weights: {novelty: 1.0, methodology: 1.0, stats_results: 1.0, figures_tables: 1.0, references: 1.0, writing_clarity: 1.0, domain_interpretation: 1.0, ethics_reproducibility: 1.0}
+  # 구조 검수 게이트(paper_final_check.py) 파라미터 — null=미검사(저널 미지정 시 관대)
+  # ⚠️ 아래 값은 WARN(경고)용 근사 관행 — hard-block 아님. 투고 전 각 저널 Guide for Authors
+  #    최신 규정을 반드시 확인(값은 저널 정책 변경 가능). 검증된 출처 확보 시 URL·날짜 병기 권장.
+  abstract_word_limit: null          # 초록 최대 단어수(영문 기준). null이면 초록 길이 미검사.
+  highlights_char_limit: null        # Highlights 항목당 최대 글자수. null이면 미검사.
+
+profiles:
+  EXJ:                              # Example Journal
+    full_name: "Korean Journal of Remote Sensing"
+    scope: "원격탐사 전 분야(국내 응용 강조) — 센서·전처리·국내 재해/환경 응용"
+    language: ko                     # 심사평·응답문 한글 관행
+    notes: "국문/영문 혼용 게재. 그림 캡션 이중언어 여부 확인. 국내 데이터(KOMPSAT·천리안 등) 출처 표기 관행."
+    weights: {methodology: 1.2, figures_tables: 1.1}
+    reference_style: "EXJ 양식(저자-연도)"
+    abstract_word_limit: null        # 국문 초록 관행 다양 → 미검사(영문 초록 병기 시 저널 규정 확인)
+    highlights_char_limit: null      # Highlights 미요구
+  RS:                                # MDPI Remote Sensing
+    full_name: "Remote Sensing (MDPI)"
+    scope: "원격탐사 과학·응용 광범위 — 방법론 신규성+오픈데이터 지향"
+    language: en
+    notes: "template 준수(섹션 구조·Author Contributions·Data Availability 필수). 리뷰 turnaround 짧음 — 지적은 번호목록. self-citation 비율 민감."
+    weights: {novelty: 1.2, stats_results: 1.1}
+    reference_style: "MDPI numbered"
+    abstract_word_limit: 200         # MDPI 초록 관행 ~200단어(투고 전 저널 최신 규정 확인)
+    highlights_char_limit: null      # Highlights 미표준(저널 확인)
+  GD:                                # GIScience & Remote Sensing 계열(사용자 게재 이력 GD2023)
+    full_name: "GIScience & Remote Sensing"
+    scope: "GIScience+RS 융합 — 공간분석 방법론과 실세계 응용의 결합 강조"
+    language: en
+    notes: "응용 기여 강조. 정확도 검증 프로토콜(spatial CV·독립 검증장면) 요구 강함."
+    weights: {methodology: 1.3, stats_results: 1.2}
+    reference_style: "Taylor & Francis (저자-연도)"
+    abstract_word_limit: 250         # T&F 계열 초록 ~250단어(투고 전 저널 최신 규정 확인)
+    highlights_char_limit: 85        # Elsevier/T&F Highlights 항목당 ~85자

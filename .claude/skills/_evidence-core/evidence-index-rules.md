@@ -45,7 +45,7 @@ Evidence Index는 **ROOT-portable**(indexer/probe가 parent-of-scripts/ 기준) 
 1. `scripts/system_truth_{indexer,probe}.py` 복사.
 2. `system-source-map.template.yaml` → `.claude/skills/_evidence-core/system-source-map.yaml`로 복사 후 harness 라벨·프로젝트-특화 도메인(OPTIONAL anchors) 수정.
 3. `python3 scripts/system_truth_indexer.py` 1회 → `.claude/runtime/system_truth_index.json` 생성. 이후 probe가 `--if-stale` 자동 갱신.
-- **검증됨**: 템플릿+스크립트를 임시 프로젝트 ROOT서 실행 → 7도메인·probe 동작(포터블 입증). source-map은 **프로젝트 구조에 맞게** 각자 작성(files_origin 전용 anchor=research_report/multi_research/writing-router/lottie는 OPTIONAL).
+- **검증됨**: 템플릿+스크립트를 임시 프로젝트 ROOT서 실행 → 7도메인·probe 동작(포터블 입증). source-map은 **프로젝트 구조에 맞게** 각자 작성(this-project 전용 anchor=research_report/multi_research/writing-router/lottie는 OPTIONAL).
 
 ## 경계
 advisory. index는 보조 — 최종 답은 항상 실제 파일이 권위. indexer/probe는 읽기중심(대상 쓰기 0, 산출은 `.claude/runtime/`만). 외부도구·MCP 없음. 관련 [[feedback-source-verify-before-claim]]·글로벌 §1 probe.

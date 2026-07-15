@@ -3,7 +3,7 @@
 
 index_json:
   generated_at: "ISO8601 — indexer 실행 시각"
-  harness: "files_origin v6 (source-map에서)"
+  harness: "this-project v6 (source-map에서)"
   source_map_sha256: "구동한 source-map.yaml의 hash"
   domain_count: "도메인 수"
   domains:

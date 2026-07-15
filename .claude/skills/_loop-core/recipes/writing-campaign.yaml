@@ -30,7 +30,7 @@ budget: {phase34_roundtrip_max: 2, iterations_max: 5, journal_samples_min: 10, j
 editable_paths: ["<캠페인 산출 디렉토리>/**", "_output/loops/<loop_id>/**", "references/**", "vault/literature/**"]
 human_gates: ["Phase0 계약", "저널/novelty/청구항 확정", "Phase3 diff 묶음 승인", "[TBD] 회수"]
 cross_model: "3-2 codex 필수 트랙(가용성 = python3 scripts/codex_probe.py 실측, '불확실' 금지). x-writing(Claude)만으론 상관오류 못 깸 — codex(다른 모델) 필수. 미가용이면 메타에 'codex 미가용(사유)' 명시. Codex 결과는 정본 아님 — Claude 재검증. stop-guard 검증 1-b가 codex 정직회계 강제."
-agents: "x역할 = 프로젝트 기존 writer 페어 재사용(fusion c/x-writing·KVOMS c/x-writer 등, PAIR_TOPOLOGY alias 해소). 페어 없으면 '하네스 구성' 선행 안내."
+agents: "x역할 = 프로젝트 기존 writer 페어 재사용(fusion c/x-writing·example-project-a c/x-writer 등, PAIR_TOPOLOGY alias 해소). 페어 없으면 '하네스 구성' 선행 안내."
 writer_policy: "Claude-first(model-policy v1.1). Gemini = 사용자가 'gemini-write로 다듬어줘' 명시할 때만(explicit_gemini_writer)."
 success_conditions:
   - "각 Phase ledger verdict 기록(디스크) — 대화 주장만으로 Phase 통과 금지"

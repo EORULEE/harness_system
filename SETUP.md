@@ -1,6 +1,6 @@
 # 처음 설치 — 전체 설정 가이드 (First Setup)
 
-이 하네스를 받은 직후 **한 번만** 거치면 되는 설정. **코어는 설정 0으로 바로 작동**하고, 아래 선택 통합은 본인 계정/폴더로 추가합니다(없으면 Claude로 대체되거나 생략).
+이 하네스를 받은 직후 **한 번만** 거치면 되는 설정. **개인 계정 없이 작동(로컬 요구사항: python3+PyYAML·node≥18 — SETUP §0)**하고, 아래 선택 통합은 본인 계정/폴더로 추가합니다(없으면 Claude로 대체되거나 생략).
 
 > Claude Code 첫 세션을 열면 이 순서를 **자동으로 안내·질문**합니다(온보딩). 직접 보려면 이 문서.
 
@@ -31,7 +31,7 @@ nvm install 18          # 또는 그 이상. 시스템 node 는 그대로 둠.
 ```bash
 git clone harness-public-core-v1.bundle harness
 cd harness
-bash selftest.sh        # 요구사항·코어 smoke(11)·스킬(45)·훅·도구·계정/MCP 상태 한 번에
+bash selftest.sh        # 요구사항·코어 smoke(22)·스킬(49)·훅·도구·계정/MCP 상태 한 번에
 ```
 
 ## 2. 코어 — 설정 0으로 바로 작동
@@ -81,7 +81,7 @@ bash install_into_project.sh /경로/내-연구프로젝트
 - hooks·scripts·tests·.claude/skills·_output(콜렉터) 를 그 폴더에 **추가**(기존 파일 보존, add-only)
 - 그 폴더에 **이미 `CLAUDE.md` 가 있으면**: 당신 내용은 **그대로 두고**, 하네스 규율은 `CLAUDE.harness.md` 에 넣은 뒤 당신 `CLAUDE.md` 끝에 **`@CLAUDE.harness.md` import 한 줄만 추가** → **당신 규율 + 하네스 규율이 둘 다 활성**(텍스트 중복 없음). 그 줄만 지우면 하네스 규율 비활성. (없으면 그냥 `CLAUDE.md` 로 복사)
 - **`settings.json` 은 훅을 병합**(기존 훅 보존 + 하네스 훅 추가, 동일 항목은 중복 안 함, 기존은 `.bak` 백업)
-- 끝나면 그 폴더에서 `selftest.sh` 자동 실행해 검증(smoke 11/11)
+- 끝나면 그 폴더에서 `selftest.sh` 자동 실행해 검증(smoke 22 자동실행)
 - 되돌리기: 추가된 위 폴더들 + `settings.json`(.bak 복원) + CLAUDE.md 의 import 두 줄만 제거. **연구 파일은 처음부터 안 건드림.**
 
 ## 자주 묻는 것 / 문제 해결
